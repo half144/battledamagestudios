@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { GridPattern } from "@/components/ui/grid-pattern";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { MagicCard } from "@/components/ui/magic-card";
+import { TextReveal } from "@/components/ui/text-reveal";
 
 const container = {
   hidden: { opacity: 0 },
@@ -201,6 +202,12 @@ export default function Home() {
           
           </motion.div>
         </div>
+      </div>
+
+      <div className="z-10 flex min-h-64 items-center justify-center rounded-lg border bg-white dark:bg-black">
+        <TextReveal 
+        className="text-red-500"
+        text="Engage in epic battles with stunning animations and powerful abilities. Team up with friends or challenge rivals in PvP combat, and climb the leaderboards to become a legend!" />
       </div>
 
       {/* Characters Preview */}
