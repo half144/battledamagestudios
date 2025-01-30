@@ -27,6 +27,7 @@ import { RainbowButton } from "@/components/ui/rainbow-button";
 import { MagicCard } from "@/components/ui/magic-card";
 import { TextReveal } from "@/components/ui/text-reveal";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
+import Image from "next/image";
 
 const container = {
   hidden: { opacity: 0 },
@@ -309,48 +310,19 @@ export default function Home() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="grid grid-cols-1 gap-6"
           >
-            {[
-              {
-                name: "Shadow Blade",
-                role: "Assassin",
-                img: "https://images.unsplash.com/photo-1580477667995-2b94f01c9516?ixlib=rb-4.0.3",
-              },
-              {
-                name: "Crystal Mage",
-                role: "Spellcaster",
-                img: "https://images.unsplash.com/photo-1542931287-023b922fa89b?ixlib=rb-4.0.3",
-              },
-              {
-                name: "Dragon Knight",
-                role: "Warrior",
-                img: "https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3",
-              },
-              {
-                name: "Spirit Healer",
-                role: "Support",
-                img: "https://images.unsplash.com/photo-1578632292335-df3abbb0d586?ixlib=rb-4.0.3",
-              },
-            ].map((char, i) => (
-              <motion.div key={i} variants={item}>
-                <Card className="overflow-hidden bg-background/50 dark:bg-gray-900/50 backdrop-blur-lg border border-red-500/20 hover:border-red-500/40 transition-all group">
-                  <div className="aspect-[3/4] relative overflow-hidden">
-                    <div
-                      className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
-                      style={{ backgroundImage: `url(${char.img})` }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <h3 className="font-bold text-lg text-white">
-                        {char.name}
-                      </h3>
-                      <p className="text-sm text-red-300">{char.role}</p>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
+            <motion.div variants={item}>
+              <Card className="overflow-hidden bg-background/50 dark:bg-gray-900/50 backdrop-blur-lg border border-red-500/20 hover:border-red-500/40 transition-all group">
+                <Image
+                  src="/3sis.png"
+                  alt="Character 1"
+                  width={500}
+                  height={500}
+                  className="w-full h-full object-cover"
+                />
+              </Card>
+            </motion.div>
           </motion.div>
         </div>
       </div>
