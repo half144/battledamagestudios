@@ -33,7 +33,7 @@ const container = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.4,
     },
   },
 };
@@ -244,6 +244,7 @@ export default function Home() {
               Discover what makes Battle Damage Studios unique
             </p>
           </motion.div>
+
           <motion.div
             variants={container}
             initial="hidden"
