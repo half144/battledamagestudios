@@ -189,7 +189,7 @@ export default function Home() {
           </h1>
           <TextAnimate
             by="word"
-            className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto"
+            className="text-xl md:text-xl text-muted-foreground mb-8 max-w-xl mx-auto"
           >
             Enter a world where legendary heroes clash, magic flows freely, and
             your destiny awaits.
@@ -217,7 +217,7 @@ export default function Home() {
           y={-1}
           strokeDasharray={"4 2"}
           className={cn(
-            "[mask-image:radial-gradient(400px_circle_at_center,white,transparent)]",
+            "[mask-image:radial-gradient(350px_circle_at_center,white,transparent)]",
             "bg-background"
           )}
         />
