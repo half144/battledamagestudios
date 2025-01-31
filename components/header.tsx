@@ -50,6 +50,14 @@ export function Header() {
             </Link>
             <Cart />
             <ThemeToggle />
+            <Link
+              href="/profile"
+              data-testid="profile-link"
+              className="text-muted-foreground hover:text-red-500 transition-colors"
+            >
+              Profile{" "}
+              <span className="text-xs text-red-500">(for preview)</span>
+            </Link>
             <Link href="/login">
               <Button
                 variant="outline"
@@ -107,6 +115,14 @@ export function Header() {
               className="block text-muted-foreground hover:text-red-500 transition-colors"
             >
               Store
+            </Link>
+            <Link
+              href="/profile"
+              data-testid="profile-link-mobile"
+              className="block text-muted-foreground hover:text-red-500 transition-colors"
+            >
+              Profile{" "}
+              <span className="text-xs text-red-500">(for preview)</span>
             </Link>
             <div className="space-y-2">
               <Link href="/login" className="w-full">
