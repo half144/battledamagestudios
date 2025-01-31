@@ -48,12 +48,14 @@ export function Header() {
               Store
             </Link>
             <Cart />
-            <Button
-              variant="outline"
-              className="border-red-500 text-red-500 hover:bg-red-500/10"
-            >
-              Login
-            </Button>
+            <Link href="/login">
+              <Button
+                variant="outline"
+                className="border-red-500 text-red-500 hover:bg-red-500/10"
+              >
+                Login
+              </Button>
+            </Link>
             <Button className="bg-red-500 hover:bg-red-600 text-white">
               Play Now
             </Button>
@@ -104,12 +106,14 @@ export function Header() {
               Store
             </Link>
             <div className="space-y-2">
-              <Button
-                variant="outline"
-                className="w-full border-red-500 text-red-500 hover:bg-red-500/10"
-              >
-                Login
-              </Button>
+              <Link href="/login" className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full border-red-500 text-red-500 hover:bg-red-500/10"
+                >
+                  Login
+                </Button>
+              </Link>
               <Button className="w-full bg-red-500 hover:bg-red-600 text-white">
                 Play Now
               </Button>

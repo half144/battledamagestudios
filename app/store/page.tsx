@@ -264,14 +264,15 @@ export default function Store() {
                           </div>
                           <Button
                             className="bg-red-500 hover:bg-red-600"
-                            onClick={() =>
+                            onClick={(e) => {
+                              e.preventDefault();
                               addToCart({
                                 id: item.id,
                                 name: item.name,
                                 price: item.price,
                                 image: item.image,
-                              })
-                            }
+                              });
+                            }}
                           >
                             <ShoppingCart className="w-4 h-4 mr-2" />
                             Add to Cart
