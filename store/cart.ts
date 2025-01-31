@@ -73,14 +73,17 @@ export const useCartStore = create<CartStore>()(
             i.id === itemId ? { ...i, quantity } : i
           );
 
-          set((state) => ({
-            items: updatedItems,
-            totalItems: state.totalItems + quantityDiff,
-            totalPrice: state.totalPrice + item.price * quantityDiff,
-          }));
+          if (quantity === 0) {
+            get().removeItem(itemId);
+          } else {
+            set((state) => ({
+              items: updatedItems,
+              totalItems: state.totalItems + quantityDiff,
+              totalPrice: state.totalPrice + item.price * quantityDiff,
+            }));
+          }
         }
       },
-
       clearCart: () => {
         set({
           items: [],
