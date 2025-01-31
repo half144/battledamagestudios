@@ -1,13 +1,16 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Battle Damage Studios - Epic Anime Gaming Experience',
-  description: 'Join millions of players in the ultimate anime gaming experience',
+  title: "Battle Damage Studios - Epic Anime Gaming Experience",
+  description:
+    "Join millions of players in the ultimate anime gaming experience",
 };
 
 export default function RootLayout({
@@ -24,7 +27,9 @@ export default function RootLayout({
           enableSystem={true}
           disableTransitionOnChange
         >
-          {children}
+          <Header />
+          <main>{children}</main>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>
