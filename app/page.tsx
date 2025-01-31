@@ -69,7 +69,7 @@ export default function Home() {
             <div className="z-10 flex min-h-64 items-center justify-center">
               <div
                 className={cn(
-                  "group rounded-full border border-black/5 bg-background text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+                  "group rounded-full border border-black/5 bg-background text-base text-foreground transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800"
                 )}
               >
                 <AnimatedShinyText className="inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-600 hover:duration-300 hover:dark:text-neutral-400">
@@ -79,17 +79,23 @@ export default function Home() {
               </div>
             </div>
           </motion.div>
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-clip-text text-white drop-shadow-2xl">
-            <LineShadowText className="italic text-white" shadowColor="white">
+          <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-clip-text text-foreground drop-shadow-2xl">
+            <LineShadowText
+              className="italic text-foreground"
+              shadowColor="currentColor"
+            >
               Battle
             </LineShadowText>
-            <LineShadowText className="italic text-white" shadowColor="white">
+            <LineShadowText
+              className="italic text-foreground"
+              shadowColor="currentColor"
+            >
               Damage
             </LineShadowText>
             <TextAnimate
               animation="blurInUp"
               duration={0.5}
-              className="text-white"
+              className="text-foreground"
               by="character"
             >
               Studios
@@ -178,9 +184,16 @@ export default function Home() {
               },
             ].map((feature, i) => (
               <motion.div key={i} variants={item}>
-                <MagicCard className="p-6 bg-background/50 dark:bg-gray-900/50 backdrop-blur-lg border border-red-500/20 hover:border-red-500/40 transition-all group">
+                <MagicCard
+                  className="p-6 bg-background/50 dark:bg-gray-900/50 backdrop-blur-lg border border-red-500/20 hover:border-red-500/40 transition-all group"
+                  gradientFrom="rgb(239 68 68)"
+                  gradientTo="rgb(185 28 28)"
+                  gradientOpacity={0.2}
+                >
                   <feature.icon className="w-12 h-12 mb-4 text-red-500 group-hover:text-red-400 transition-colors" />
-                  <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+                  <h3 className="text-xl font-bold mb-2 text-foreground">
+                    {feature.title}
+                  </h3>
                   <p className="text-muted-foreground">{feature.desc}</p>
                 </MagicCard>
               </motion.div>
@@ -189,7 +202,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="z-10 flex min-h-64 items-center justify-center rounded-lg border bg-white dark:bg-black">
+      <div className="z-10 flex min-h-64 items-center justify-center rounded-lg border bg-background">
         <TextReveal
           className="text-red-500"
           text="Engage in epic battles with stunning animations and powerful abilities. Team up with friends or challenge rivals in PvP combat, and climb the leaderboards to become a legend!"

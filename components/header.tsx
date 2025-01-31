@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import Link from "next/link";
 import { Cart } from "@/components/cart";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -48,6 +49,7 @@ export function Header() {
               Store
             </Link>
             <Cart />
+            <ThemeToggle />
             <Link href="/login">
               <Button
                 variant="outline"
@@ -64,6 +66,7 @@ export function Header() {
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
             <Cart />
+            <ThemeToggle />
             <button className="p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? (
                 <X className="w-6 h-6 text-red-500" />

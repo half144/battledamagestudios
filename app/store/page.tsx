@@ -222,7 +222,12 @@ export default function Store() {
               {filteredItems.map((item) => (
                 <motion.div key={item.id}>
                   <Link href={`/store/${item.id}`}>
-                    <MagicCard className="relative overflow-hidden group h-full">
+                    <MagicCard
+                      className="relative overflow-hidden group h-full"
+                      gradientFrom="rgb(239 68 68)"
+                      gradientTo="rgb(185 28 28)"
+                      gradientOpacity={0.2}
+                    >
                       {item.featured && (
                         <div className="absolute top-2 right-2 z-10">
                           <Badge className="bg-red-500">Featured</Badge>
