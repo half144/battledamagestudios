@@ -2,7 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Editor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { useEditor } from '@tiptap/react';
 import { motion } from "framer-motion";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { useState } from "react";
@@ -82,13 +84,47 @@ export default function BlogEditorPage() {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Content</label>
-            <Textarea
-              value={formData.content}
-              onChange={(e) => setFormData({...formData, content: e.target.value})}
-              placeholder="Write your post content here..."
-              required
-              rows={12}
-            />
+            <div className="rounded-lg border p-4 focus-within:ring-2 focus-within:ring-red-500">
+              <div className="mb-2 flex gap-2 border-b pb-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => editor?.chain().focus().toggleBold().run()}
+                  disabled={!editor?.isActive('bold')}
+                >
+                  B
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => editor?.chain().focus().toggleItalic().run()}
+                  disabled={!editor?.isActive('italic')}
+                >
+                  I
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => editor?.chain().focus().toggleStrike().run()}
+                  disabled={!editor?.isActive('strike')}
+                >
+                  S
+                </Button>
+              </div>
+              <Editor 
+                editorProps={{
+                  attributes: {
+                    class: "prose max-w-none dark:prose-invert focus:outline-none min-h-[400px] p-2",
+                  },
+                }}
+                content={formData.content}
+                onUpdate={({ editor }) => setFormData({...formData, content: editor.getHTML()})}
+                extensions={[StarterKit]}
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-4">
