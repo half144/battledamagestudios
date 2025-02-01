@@ -43,6 +43,10 @@ export const storeItems: StoreItem[] = [
   // Add more items...
 ];
 
+export function addBlogPost(newPost: BlogPost) {
+  sampleBlogs = [newPost, ...sampleBlogs];
+}
+
 export const categories: ItemCategory[] = [
   "Bundle",
   "Currency",

@@ -92,6 +92,12 @@ export default function BlogsPage() {
           >
             Stay updated with the latest news, development insights, and community stories
           </motion.p>
+          <Button asChild variant="outline" className="bg-red-500/10 hover:bg-red-500/20 border-red-500/20">
+            <Link href="/blogs/editor">
+              <Sparkles className="w-4 h-4 mr-2" />
+              New Post
+            </Link>
+          </Button>
         </div>
 
         <motion.div 
