@@ -48,6 +48,12 @@ export function Header() {
             >
               Store
             </Link>
+            <Link
+              href="/blogs"
+              className="text-muted-foreground hover:text-red-500 transition-colors"
+            >
+              Blogs
+            </Link>
             <Cart />
             <ThemeToggle />
             <Link
@@ -112,9 +118,17 @@ export function Header() {
             </Link>
             <Link
               href="/store"
-              className="block text-muted-foreground hover:text-red-500 transition-colors"
+              className="block px-3 py-2 text-muted-foreground hover:text-red-500 transition-colors"
+              onClick={() => setIsMenuOpen(false)}
             >
               Store
+            </Link>
+            <Link
+              href="/blogs"
+              className="block px-3 py-2 text-muted-foreground hover:text-red-500 transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Blogs
             </Link>
             <Link
               href="/profile"
