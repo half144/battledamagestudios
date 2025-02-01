@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Editor } from '@tiptap/react';
+import { Textarea } from "@/components/ui/textarea";
+import { Editor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useEditor } from '@tiptap/react';
 import { motion } from "framer-motion";
@@ -11,12 +12,27 @@ import { useState } from "react";
 import Link from "next/link";
 import { addBlogPost } from "@/data/store";
 
+interface BlogFormData {
+  title: string;
+  description: string;
+  content: string;
+  image: string;
+}
+
 export default function BlogEditorPage() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<BlogFormData>({
     title: '',
     description: '',
     content: '',
     image: ''
+  });
+
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: formData.content,
+    onUpdate: ({ editor }) => {
+      setFormData(prev => ({...prev, content: editor.getHTML()}));
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -91,7 +107,7 @@ export default function BlogEditorPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => editor?.chain().focus().toggleBold().run()}
-                  disabled={!editor?.isActive('bold')}
+                  className={editor?.isActive('bold') ? 'bg-slate-200 dark:bg-slate-800' : ''}
                 >
                   B
                 </Button>
@@ -100,7 +116,7 @@ export default function BlogEditorPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => editor?.chain().focus().toggleItalic().run()}
-                  disabled={!editor?.isActive('italic')}
+                  className={editor?.isActive('italic') ? 'bg-slate-200 dark:bg-slate-800' : ''}
                 >
                   I
                 </Button>
@@ -109,20 +125,14 @@ export default function BlogEditorPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => editor?.chain().focus().toggleStrike().run()}
-                  disabled={!editor?.isActive('strike')}
+                  className={editor?.isActive('strike') ? 'bg-slate-200 dark:bg-slate-800' : ''}
                 >
                   S
                 </Button>
               </div>
-              <Editor 
-                editorProps={{
-                  attributes: {
-                    class: "prose max-w-none dark:prose-invert focus:outline-none min-h-[400px] p-2",
-                  },
-                }}
-                content={formData.content}
-                onUpdate={({ editor }) => setFormData({...formData, content: editor.getHTML()})}
-                extensions={[StarterKit]}
+              <EditorContent 
+                editor={editor}
+                className="prose max-w-none dark:prose-invert focus:outline-none min-h-[400px] p-2"
               />
             </div>
           </div>
