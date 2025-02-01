@@ -75,7 +75,6 @@ export default function BlogsPage() {
         className="space-y-12"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
       >
         <div className="flex flex-col items-center text-center space-y-6">
           <div className="flex justify-center items-center gap-2 mb-4">
@@ -90,7 +89,6 @@ export default function BlogsPage() {
             className="text-muted-foreground max-w-[600px] text-lg"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
           >
             Stay updated with the latest news, development insights, and community stories
           </motion.p>
@@ -100,7 +98,6 @@ export default function BlogsPage() {
           className="max-w-xl mx-auto w-full relative"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-500 w-5 h-5" />
           <Input
@@ -115,7 +112,6 @@ export default function BlogsPage() {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
         >
           {filteredBlogs.map((blog, index) => (
             <motion.div
