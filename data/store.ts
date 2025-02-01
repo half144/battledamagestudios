@@ -51,6 +51,10 @@ export interface BlogPost {
   readTime: string;
   image: string;
   content: string;
+  author?: {
+    name: string;
+    avatar: string;
+  };
 }
 
 export function addBlogPost(newPost: BlogPost) {

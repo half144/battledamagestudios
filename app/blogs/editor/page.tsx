@@ -20,6 +20,10 @@ interface BlogFormData {
   image: string;
   date: string;
   readTime: string;
+  author?: {
+    name: string;
+    avatar: string;
+  };
 }
 
 export default function BlogEditorPage() {
@@ -34,7 +38,11 @@ export default function BlogEditorPage() {
       month: 'long',
       day: 'numeric'
     }),
-    readTime: '5 min read'
+    readTime: '5 min read',
+    author: {
+      name: "Alex Johnson",
+      avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop"
+    }
   });
 
   const editor = useEditor({

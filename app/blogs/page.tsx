@@ -27,6 +27,10 @@ const sampleBlogs: BlogPost[] = [
     image:
       "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1000&auto=format&fit=crop",
     content: "Full article content will be loaded dynamically.",
+    author: {
+      name: "Alex Johnson",
+      avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
+    },
   },
   {
     id: "2",
@@ -38,6 +42,10 @@ const sampleBlogs: BlogPost[] = [
     image:
       "https://images.unsplash.com/photo-1534423861386-85a16f5d13fd?q=80&w=1000&auto=format&fit=crop",
     content: "Full article content will be loaded dynamically.",
+    author: {
+      name: "Alex Johnson",
+      avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
+    },
   },
   {
     id: "3",
@@ -49,6 +57,10 @@ const sampleBlogs: BlogPost[] = [
     image:
       "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1000&auto=format&fit=crop",
     content: "Full article content will be loaded dynamically.",
+    author: {
+      name: "Alex Johnson",
+      avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
+    },
   },
   {
     id: "4",
@@ -60,6 +72,10 @@ const sampleBlogs: BlogPost[] = [
     image:
       "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?q=80&w=1000&auto=format&fit=crop",
     content: "Full article content will be loaded dynamically.",
+    author: {
+      name: "Alex Johnson",
+      avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
+    },
   },
   {
     id: "5",
@@ -71,6 +87,10 @@ const sampleBlogs: BlogPost[] = [
     image:
       "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000&auto=format&fit=crop",
     content: "Full article content will be loaded dynamically.",
+    author: {
+      name: "Alex Johnson",
+      avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
+    },
   },
 ];
 
@@ -170,6 +190,10 @@ export default function BlogsPage() {
                     <span className="text-muted-foreground">·</span>
                     <span className="text-muted-foreground">
                       {blog.readTime}
+                    </span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-muted-foreground">
+                      By {blog.author?.name}
                     </span>
                   </CardDescription>
                 </CardHeader>
