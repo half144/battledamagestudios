@@ -1,16 +1,15 @@
 'use client';
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Editor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useEditor } from '@tiptap/react';
-import { motion } from "framer-motion";
-import { ArrowLeft, Sparkles } from "lucide-react";
 import { useState } from "react";
-import Link from "next/link";
 import { addBlogPost } from "@/data/store";
+import { EditorHeader } from "@/components/blog/editor-header";
+import { EditorControls } from "@/components/blog/editor-controls";
+import { EditorActions } from "@/components/blog/editor-actions";
 
 interface BlogFormData {
   id: string;
@@ -70,16 +69,7 @@ export default function BlogEditorPage() {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-3xl mx-auto"
       >
-        <div className="flex items-center justify-between mb-12">
-          <Link href="/blogs" className="flex items-center text-red-500 hover:text-red-600 transition-colors">
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back to Blogs
-          </Link>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-red-500" />
-            New Blog Post
-          </h2>
-        </div>
+        <EditorHeader backLink="/blogs" title="New Blog Post" />
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-2">
@@ -115,35 +105,7 @@ export default function BlogEditorPage() {
           <div className="space-y-2">
             <label className="text-sm font-medium">Content</label>
             <div className="rounded-lg border p-4 focus-within:ring-2 focus-within:ring-red-500">
-              <div className="mb-2 flex gap-2 border-b pb-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => editor?.chain().focus().toggleBold().run()}
-                  className={editor?.isActive('bold') ? 'bg-slate-200 dark:bg-slate-800' : ''}
-                >
-                  B
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => editor?.chain().focus().toggleItalic().run()}
-                  className={editor?.isActive('italic') ? 'bg-slate-200 dark:bg-slate-800' : ''}
-                >
-                  I
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => editor?.chain().focus().toggleStrike().run()}
-                  className={editor?.isActive('strike') ? 'bg-slate-200 dark:bg-slate-800' : ''}
-                >
-                  S
-                </Button>
-              </div>
+              <EditorControls editor={editor} />
               <EditorContent 
                 editor={editor}
                 className="prose max-w-none dark:prose-invert focus:outline-none min-h-[400px] p-2"
@@ -151,16 +113,7 @@ export default function BlogEditorPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-4">
-            <Button variant="outline" asChild>
-              <Link href="/blogs">
-                Cancel
-              </Link>
-            </Button>
-            <Button type="submit" className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700">
-              Publish Post
-            </Button>
-          </div>
+          <EditorActions onCancel="/blogs" submitLabel="Publish Post" />
         </form>
       </motion.div>
     </div>
