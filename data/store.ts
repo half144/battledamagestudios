@@ -43,8 +43,18 @@ export const storeItems: StoreItem[] = [
   // Add more items...
 ];
 
+export interface BlogPost {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  readTime: string;
+  image: string;
+  content: string;
+}
+
 export function addBlogPost(newPost: BlogPost) {
-  sampleBlogs = [newPost, ...sampleBlogs];
+  return;
 }
 
 export const categories: ItemCategory[] = [

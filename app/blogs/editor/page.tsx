@@ -13,18 +13,28 @@ import Link from "next/link";
 import { addBlogPost } from "@/data/store";
 
 interface BlogFormData {
+  id: string;
   title: string;
   description: string;
   content: string;
   image: string;
+  date: string;
+  readTime: string;
 }
 
 export default function BlogEditorPage() {
   const [formData, setFormData] = useState<BlogFormData>({
+    id: new Date().getTime().toString(),
     title: '',
     description: '',
     content: '',
-    image: ''
+    image: '',
+    date: new Date().toLocaleDateString('en-US', { 
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }),
+    readTime: '5 min read'
   });
 
   const editor = useEditor({
@@ -38,12 +48,8 @@ export default function BlogEditorPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newPost = {
-      id: Date.now().toString(),
-      title: formData.title,
-      description: formData.description,
-      date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-      readTime: `${Math.ceil(formData.content.length / 1000)} min read`,
-      image: formData.image || 'https://images.unsplash.com/photo-1589652717521-10c0d092dea9?q=80&w=2070&auto=format&fit=crop'
+      ...formData,
+      readTime: `${Math.ceil(formData.content.length / 1000)} min read`
     };
     addBlogPost(newPost);
     window.location.href = '/blogs';

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
@@ -7,21 +7,9 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { MagicCard } from "@/components/ui/magic-card";
 import { use } from "react";
+import { BlogPost as IBlogPost } from "@/data/store";
 
-interface BlogPost {
-  id: string;
-  title: string;
-  content: string;
-  date: string;
-  readTime: string;
-  image: string;
-  author: {
-    name: string;
-    avatar: string;
-  };
-}
-
-const getBlogPost = (id: string): BlogPost => ({
+const getBlogPost = (id: string): IBlogPost => ({
   id,
   title: "The Evolution of Anime Gaming",
   content: `
@@ -38,11 +26,13 @@ const getBlogPost = (id: string): BlogPost => ({
   `,
   date: "January 31, 2025",
   readTime: "5 min read",
-  image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1000&auto=format&fit=crop",
+  image:
+    "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1000&auto=format&fit=crop",
   author: {
     name: "Alex Johnson",
-    avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop"
-  }
+    avatar:
+      "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
+  },
 });
 
 export default function BlogPost({ params }: any) {
@@ -51,7 +41,7 @@ export default function BlogPost({ params }: any) {
 
   return (
     <div className="container mx-auto px-4 py-24">
-      <motion.div 
+      <motion.div
         className="max-w-4xl mx-auto space-y-12"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -70,7 +60,7 @@ export default function BlogPost({ params }: any) {
           </Button>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className="space-y-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -82,7 +72,7 @@ export default function BlogPost({ params }: any) {
               {post.title}
             </h1>
           </div>
-          
+
           <div className="flex items-center gap-6 text-muted-foreground">
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-red-500" />
@@ -95,13 +85,13 @@ export default function BlogPost({ params }: any) {
           </div>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className="relative h-[500px] w-full rounded-xl overflow-hidden border border-red-500/20"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center transform transition-all duration-500 hover:scale-105"
             style={{ backgroundImage: `url(${post.image})` }}
           />
@@ -113,7 +103,7 @@ export default function BlogPost({ params }: any) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
         >
-          <MagicCard 
+          <MagicCard
             className="p-8 group overflow-hidden"
             gradientFrom="rgb(239 68 68)"
             gradientTo="rgb(185 28 28)"
@@ -121,7 +111,7 @@ export default function BlogPost({ params }: any) {
           >
             <div className="flex items-center gap-4 mb-8">
               <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-red-500/20">
-                <div 
+                <div
                   className="w-full h-full bg-cover bg-center transform transition-all duration-500 group-hover:scale-110"
                   style={{ backgroundImage: `url(${post.author.avatar})` }}
                 />
@@ -132,7 +122,7 @@ export default function BlogPost({ params }: any) {
               </div>
             </div>
 
-            <div 
+            <div
               className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-red-500"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
