@@ -112,11 +112,11 @@ export default function BlogPost({ params }: any) {
               <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-red-500/20">
                 <div
                   className="w-full h-full bg-cover bg-center transform transition-all duration-500 group-hover:scale-110"
-                  style={{ backgroundImage: `url(${post.author.avatar})` }}
+                  style={{ backgroundImage: `url(${post.author?.avatar || '/default-avatar.png'})` }}
                 />
               </div>
               <div>
-                <div className="font-semibold text-lg">{post.author.name}</div>
+                <div className="font-semibold text-lg">{post.author?.name || 'Anonymous'}</div>
                 <div className="text-sm text-red-500">Author</div>
               </div>
             </div>
