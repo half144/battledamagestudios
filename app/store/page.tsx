@@ -1,21 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { motion } from "framer-motion";
-import { TextAnimate } from "@/components/ui/text-animate";
-import {
-  ShoppingCart,
-  Star,
-  Sparkles,
-  Shield,
-  Sword,
-  Search,
-  SlidersHorizontal,
-} from "lucide-react";
-import { MagicCard } from "@/components/ui/magic-card";
-import Image from "next/image";
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -24,12 +11,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useCartStore } from "@/store/cart";
-import { Cart } from "@/components/cart";
-import { StoreItem, storeItems, categories, ItemCategory } from "@/data/store";
-import Link from "next/link";
+import { StoreItem, storeItems, ItemCategory } from "@/data/store";
+import { StoreHeader } from "@/components/store-header";
+import { FiltersSidebar } from "@/components/filters-sidebar";
+import { StoreItemCard } from "@/components/store-item-card";
+
+const PRICE_RANGES = {
+  ALL: "all",
+  UNDER_10: "under10",
+  BETWEEN_10_25: "10to25",
+  OVER_25: "over25",
+} as const;
+
+const SORT_OPTIONS = {
+  FEATURED: "featured",
+  PRICE_ASC: "price-asc",
+  PRICE_DESC: "price-desc",
+  RATING: "rating",
+} as const;
 
 const container = {
   hidden: { opacity: 0 },
@@ -40,11 +40,6 @@ const container = {
     },
   },
 };
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-} as const;
 
 export default function Store() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,132 +54,71 @@ export default function Store() {
 
   const addToCart = useCartStore((state) => state.addItem);
 
-  const filteredItems = storeItems
-    .filter((item) => {
-      const matchesSearch =
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "all" || item.category === selectedCategory;
-      const matchesFeatured = !showFeaturedOnly || item.featured;
-      const matchesPriceRange =
-        priceRange === "all" ||
-        (priceRange === "under10" && item.price < 10) ||
-        (priceRange === "10to25" && item.price >= 10 && item.price <= 25) ||
-        (priceRange === "over25" && item.price > 25);
+  const filterItems = (
+    items: StoreItem[],
+    searchQuery: string,
+    selectedCategory: ItemCategory | "all",
+    showFeaturedOnly: boolean,
+    priceRange: typeof PRICE_RANGES[keyof typeof PRICE_RANGES],
+    sortBy: typeof SORT_OPTIONS[keyof typeof SORT_OPTIONS]
+  ) => {
+    return items
+      .filter((item) => {
+        const matchesSearch =
+          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory =
+          selectedCategory === "all" || item.category === selectedCategory;
+        const matchesFeatured = !showFeaturedOnly || item.featured;
+        const matchesPriceRange =
+          priceRange === PRICE_RANGES.ALL ||
+          (priceRange === PRICE_RANGES.UNDER_10 && item.price < 10) ||
+          (priceRange === PRICE_RANGES.BETWEEN_10_25 &&
+            item.price >= 10 &&
+            item.price <= 25) ||
+          (priceRange === PRICE_RANGES.OVER_25 && item.price > 25);
 
-      return (
-        matchesSearch && matchesCategory && matchesFeatured && matchesPriceRange
-      );
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "price-asc":
-          return a.price - b.price;
-        case "price-desc":
-          return b.price - a.price;
-        case "rating":
-          return b.rating - a.rating;
-        default:
-          return b.featured ? 1 : -1;
-      }
-    });
+        return (
+          matchesSearch && matchesCategory && matchesFeatured && matchesPriceRange
+        );
+      })
+      .sort((a, b) => {
+        switch (sortBy) {
+          case SORT_OPTIONS.PRICE_ASC:
+            return a.price - b.price;
+          case SORT_OPTIONS.PRICE_DESC:
+            return b.price - a.price;
+          case SORT_OPTIONS.RATING:
+            return b.rating - a.rating;
+          default:
+            return b.featured ? 1 : -1;
+        }
+      });
+  };
+
+  const filteredItems = filterItems(
+    storeItems,
+    searchQuery,
+    selectedCategory,
+    showFeaturedOnly,
+    priceRange,
+    sortBy
+  );
 
   return (
     <div className="min-h-screen bg-background pt-24">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Store Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
-        >
-          <div className="flex justify-center items-center gap-2 mb-4">
-            <Sparkles className="w-8 h-8 text-red-500" />
-            <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-600">
-              Battle Store
-            </h1>
-          </div>
-        </motion.div>
+        <StoreHeader />
 
-        {/* Filters and Search */}
         <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8 mb-8">
-          {/* Filters Sidebar */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-6 bg-background/50 p-6 rounded-lg border border-red-500/20"
-          >
-            <div>
-              <h3 className="font-bold mb-4 flex items-center gap-2">
-                <SlidersHorizontal className="w-4 h-4" /> Filters
-              </h3>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Category
-                  </label>
-                  <Select
-                    value={selectedCategory}
-                    onValueChange={(value) =>
-                      setSelectedCategory(value as ItemCategory | "all")
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Price Range
-                  </label>
-                  <Select
-                    value={priceRange}
-                    onValueChange={(
-                      value: "all" | "under10" | "10to25" | "over25"
-                    ) => setPriceRange(value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select price range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Prices</SelectItem>
-                      <SelectItem value="under10">Under $10</SelectItem>
-                      <SelectItem value="10to25">$10 - $25</SelectItem>
-                      <SelectItem value="over25">Over $25</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="featured"
-                    checked={showFeaturedOnly}
-                    onCheckedChange={() =>
-                      setShowFeaturedOnly(!showFeaturedOnly)
-                    }
-                  />
-                  <label
-                    htmlFor="featured"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Featured Items Only
-                  </label>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          <FiltersSidebar
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            priceRange={priceRange}
+            setPriceRange={setPriceRange}
+            showFeaturedOnly={showFeaturedOnly}
+            setShowFeaturedOnly={setShowFeaturedOnly}
+          />
 
           {/* Main Content */}
           <div className="space-y-6">
