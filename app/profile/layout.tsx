@@ -13,7 +13,7 @@ export default function ProfileLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background pt-24">
+    <div className="min-h-screen bg-background pt-24 max-w-7xl mx-auto">
       <div className="flex relative">
         <Button
           variant="ghost"
