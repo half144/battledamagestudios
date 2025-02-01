@@ -1,20 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { motion } from "framer-motion";
-import { Search, Sparkles } from "lucide-react";
 import { useState } from "react";
-import Link from "next/link";
-import { MagicCard } from "@/components/ui/magic-card";
+import { motion } from "framer-motion";
 import { BlogPost } from "@/data/store";
+import { BlogHeader } from "@/components/blog/blog-header";
+import { BlogSearch } from "@/components/blog/blog-search";
+import { BlogCard } from "@/components/blog/blog-card";
 
 const sampleBlogs: BlogPost[] = [
   {
@@ -110,46 +101,15 @@ export default function BlogsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="flex flex-col items-center text-center space-y-6">
-          <div className="flex justify-center items-center gap-2 mb-4">
-            <Sparkles className="w-8 h-8 text-red-500" />
-            <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-600">
-              Battle Damage Blog
-            </h1>
-          </div>
-          <motion.p
-            className="text-muted-foreground max-w-[600px] text-lg"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            Stay updated with the latest news, development insights, and
-            community stories
-          </motion.p>
-          <Button
-            asChild
-            variant="outline"
-            className="bg-red-500/10 hover:bg-red-500/20 border-red-500/20"
-          >
-            <Link href="/blogs/editor">
-              <Sparkles className="w-4 h-4 mr-2" />
-              New Post
-            </Link>
-          </Button>
-        </div>
+        <BlogHeader 
+          title="Battle Damage Blog"
+          description="Stay updated with the latest news, development insights, and community stories"
+        />
 
-        <motion.div
-          className="max-w-xl mx-auto w-full relative"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-500 w-5 h-5" />
-          <Input
-            placeholder="Search articles..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 py-6 text-lg border-red-500/20"
-          />
-        </motion.div>
+        <BlogSearch 
+          searchQuery={searchQuery}
+          onSearchChange={(value) => setSearchQuery(value)}
+        />
 
         <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
@@ -157,62 +117,7 @@ export default function BlogsPage() {
           animate={{ opacity: 1 }}
         >
           {filteredBlogs.map((blog, index) => (
-            <motion.div
-              key={blog.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 * index }}
-            >
-              <MagicCard
-                className="flex flex-col h-full transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl group overflow-hidden"
-                gradientFrom="rgb(239 68 68)"
-                gradientTo="rgb(185 28 28)"
-                gradientOpacity={0.2}
-              >
-                <div className="relative h-56 w-full overflow-hidden rounded-t-lg">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transform transition-all duration-500 group-hover:scale-110"
-                    style={{ backgroundImage: `url(${blog.image})` }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                </div>
-                <CardHeader className="relative z-10 -mt-6">
-                  <CardTitle className="line-clamp-2 text-xl">
-                    <Link
-                      href={`/blogs/${blog.id}`}
-                      className="hover:text-red-500 transition-colors"
-                    >
-                      {blog.title}
-                    </Link>
-                  </CardTitle>
-                  <CardDescription className="flex items-center gap-2 mt-2">
-                    <span className="text-red-500">{blog.date}</span>
-                    <span className="text-muted-foreground">·</span>
-                    <span className="text-muted-foreground">
-                      {blog.readTime}
-                    </span>
-                    <span className="text-muted-foreground">·</span>
-                    <span className="text-muted-foreground">
-                      By {blog.author?.name}
-                    </span>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground line-clamp-3">
-                    {blog.description}
-                  </p>
-                </CardContent>
-                <CardFooter className="mt-auto pt-6">
-                  <Button
-                    asChild
-                    variant="default"
-                    className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
-                  >
-                    <Link href={`/blogs/${blog.id}`}>Read More</Link>
-                  </Button>
-                </CardFooter>
-              </MagicCard>
-            </motion.div>
+            <BlogCard key={blog.id} blog={blog} index={index} />
           ))}
         </motion.div>
       </motion.div>
