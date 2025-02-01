@@ -12,6 +12,10 @@ import { BlogPost as IBlogPost } from "@/data/store";
 const getBlogPost = (id: string): IBlogPost => ({
   id,
   title: "The Evolution of Anime Gaming",
+  description: "Exploring how anime games have transformed the gaming industry over the past decade, from simple adaptations to complex narrative experiences.",
+  date: "January 31, 2025",
+  readTime: "5 min read",
+  image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1000&auto=format&fit=crop",
   content: `
     <p>The world of anime gaming has undergone a remarkable transformation over the past decade. From simple 2D fighters to complex, narrative-driven experiences, the evolution has been nothing short of extraordinary.</p>
     
@@ -22,17 +26,12 @@ const getBlogPost = (id: string): IBlogPost => ({
     <p>Today's anime games are pushing boundaries in both visual fidelity and gameplay mechanics. At Battle Damage Studios, we're proud to be at the forefront of this evolution, creating experiences that honor the anime aesthetic while delivering compelling gameplay.</p>
     
     <h2>Looking to the Future</h2>
-    <p>As we look ahead, the possibilities are endless. With advancing technology and growing global appreciation for anime aesthetics, we're excited to continue pushing the boundaries of what's possible in anime gaming.</p>
+    <p>As we look ahead, the possibilities are endless. With advancing technology and growing global appreciation for anime aesthetics, we're entering a golden age of anime gaming.</p>
   `,
-  date: "January 31, 2025",
-  readTime: "5 min read",
-  image:
-    "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1000&auto=format&fit=crop",
   author: {
     name: "Alex Johnson",
-    avatar:
-      "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
-  },
+    avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop"
+  }
 });
 
 export default function BlogPost({ params }: any) {
