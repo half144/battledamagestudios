@@ -20,7 +20,8 @@ const sampleBlogs: BlogPost[] = [
     content: "Full article content will be loaded dynamically.",
     author: {
       name: "Alex Johnson",
-      avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
+      avatar:
+        "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
     },
   },
   {
@@ -35,7 +36,8 @@ const sampleBlogs: BlogPost[] = [
     content: "Full article content will be loaded dynamically.",
     author: {
       name: "Alex Johnson",
-      avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
+      avatar:
+        "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
     },
   },
   {
@@ -50,7 +52,8 @@ const sampleBlogs: BlogPost[] = [
     content: "Full article content will be loaded dynamically.",
     author: {
       name: "Alex Johnson",
-      avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
+      avatar:
+        "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
     },
   },
   {
@@ -65,7 +68,8 @@ const sampleBlogs: BlogPost[] = [
     content: "Full article content will be loaded dynamically.",
     author: {
       name: "Alex Johnson",
-      avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
+      avatar:
+        "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
     },
   },
   {
@@ -80,7 +84,8 @@ const sampleBlogs: BlogPost[] = [
     content: "Full article content will be loaded dynamically.",
     author: {
       name: "Alex Johnson",
-      avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
+      avatar:
+        "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
     },
   },
 ];
@@ -101,12 +106,12 @@ export default function BlogsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <BlogHeader 
+        <BlogHeader
           title="Battle Damage Blog"
           description="Stay updated with the latest news, development insights, and community stories"
         />
 
-        <BlogSearch 
+        <BlogSearch
           searchQuery={searchQuery}
           onSearchChange={(value) => setSearchQuery(value)}
         />

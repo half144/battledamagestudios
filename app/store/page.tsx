@@ -46,7 +46,7 @@ export default function Store() {
   const [selectedCategory, setSelectedCategory] = useState<
     ItemCategory | "all"
   >("all");
-  const [sortBy, setSortBy] = useState<keyof typeof SORT_OPTIONS>("featured");
+  const [sortBy, setSortBy] = useState<keyof typeof SORT_OPTIONS>("FEATURED");
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
   const [priceRange, setPriceRange] = useState<
     "all" | "under10" | "10to25" | "over25"
@@ -59,8 +59,8 @@ export default function Store() {
     searchQuery: string,
     selectedCategory: ItemCategory | "all",
     showFeaturedOnly: boolean,
-    priceRange: typeof PRICE_RANGES[keyof typeof PRICE_RANGES],
-    sortBy: typeof SORT_OPTIONS[keyof typeof SORT_OPTIONS]
+    priceRange: (typeof PRICE_RANGES)[keyof typeof PRICE_RANGES],
+    sortBy: (typeof SORT_OPTIONS)[keyof typeof SORT_OPTIONS]
   ) => {
     return items
       .filter((item) => {
@@ -79,7 +79,10 @@ export default function Store() {
           (priceRange === PRICE_RANGES.OVER_25 && item.price > 25);
 
         return (
-          matchesSearch && matchesCategory && matchesFeatured && matchesPriceRange
+          matchesSearch &&
+          matchesCategory &&
+          matchesFeatured &&
+          matchesPriceRange
         );
       })
       .sort((a, b) => {
@@ -102,7 +105,7 @@ export default function Store() {
     selectedCategory,
     showFeaturedOnly,
     priceRange,
-    sortBy
+    sortBy as (typeof SORT_OPTIONS)[keyof typeof SORT_OPTIONS]
   );
 
   return (
@@ -133,15 +136,20 @@ export default function Store() {
                   className="pl-10"
                 />
               </div>
-              <Select value={sortBy} onValueChange={setSortBy}>
+              <Select
+                value={sortBy}
+                onValueChange={(value: keyof typeof SORT_OPTIONS) =>
+                  setSortBy(value)
+                }
+              >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="featured">Featured</SelectItem>
-                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                  <SelectItem value="rating">Rating</SelectItem>
+                  <SelectItem value="FEATURED">Featured</SelectItem>
+                  <SelectItem value="PRICE_ASC">Price: Low to High</SelectItem>
+                  <SelectItem value="PRICE_DESC">Price: High to Low</SelectItem>
+                  <SelectItem value="RATING">Rating</SelectItem>
                 </SelectContent>
               </Select>
             </div>
