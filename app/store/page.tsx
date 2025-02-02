@@ -46,7 +46,7 @@ export default function Store() {
   const [selectedCategory, setSelectedCategory] = useState<
     ItemCategory | "all"
   >("all");
-  const [sortBy, setSortBy] = useState("featured");
+  const [sortBy, setSortBy] = useState<keyof typeof SORT_OPTIONS>("featured");
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
   const [priceRange, setPriceRange] = useState<
     "all" | "under10" | "10to25" | "over25"
