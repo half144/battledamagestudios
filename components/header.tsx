@@ -25,22 +25,10 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link
-              href="/#features"
+              href="/#Projects"
               className="text-muted-foreground hover:text-red-500 transition-colors"
             >
-              Features
-            </Link>
-            <Link
-              href="/#characters"
-              className="text-muted-foreground hover:text-red-500 transition-colors"
-            >
-              Characters
-            </Link>
-            <Link
-              href="/#stats"
-              className="text-muted-foreground hover:text-red-500 transition-colors"
-            >
-              Stats
+              Mixers Universe
             </Link>
             <Link
               href="/store"
@@ -49,10 +37,10 @@ export function Header() {
               Store
             </Link>
             <Link
-              href="/blogs"
+              href="/Updates"
               className="text-muted-foreground hover:text-red-500 transition-colors"
             >
-              Blogs
+              Updates 
             </Link>
             <Cart />
             <ThemeToggle />
@@ -72,9 +60,6 @@ export function Header() {
                 Login
               </Button>
             </Link>
-            <Button className="bg-red-500 hover:bg-red-600 text-white">
-              Play Now
-            </Button>
           </nav>
 
           {/* Mobile Menu Button */}
