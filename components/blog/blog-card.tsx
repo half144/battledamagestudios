@@ -39,7 +39,7 @@ export function BlogCard({ blog, index }: BlogCardProps) {
         <CardHeader className="relative z-10 -mt-6">
           <CardTitle className="line-clamp-2 text-xl">
             <Link
-              href={`/blogs/${blog.id}`}
+              href={`/Updates/${blog.id}`}
               className="hover:text-red-500 transition-colors"
             >
               {blog.title}
@@ -68,7 +68,7 @@ export function BlogCard({ blog, index }: BlogCardProps) {
             variant="default"
             className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
           >
-            <Link href={`/blogs/${blog.id}`}>Read More</Link>
+            <Link href={`/Updates/${blog.id}`}>Read More</Link>
           </Button>
         </CardFooter>
       </MagicCard>
