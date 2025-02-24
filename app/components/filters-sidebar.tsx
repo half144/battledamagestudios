@@ -13,11 +13,13 @@ import { SlidersHorizontal } from "lucide-react";
 import { ItemCategory } from "@/data/store";
 import { categories } from "@/data/store";
 
+type PriceRange = "all" | "under10" | "10to25" | "over25";
+
 type FiltersSidebarProps = {
   selectedCategory: ItemCategory | "all";
   setSelectedCategory: (value: ItemCategory | "all") => void;
-  priceRange: "all" | "under10" | "10to25" | "over25";
-  setPriceRange: (value: "all" | "under10" | "10to25" | "over25") => void;
+  priceRange: PriceRange;
+  setPriceRange: (value: PriceRange) => void;
   showFeaturedOnly: boolean;
   setShowFeaturedOnly: (value: boolean) => void;
 };
@@ -63,10 +65,12 @@ export function FiltersSidebar({
             </Select>
           </div>
           <div>
-            <label className="text-sm font-medium mb-2 block">Price Range</label>
+            <label className="text-sm font-medium mb-2 block">
+              Price Range
+            </label>
             <Select
               value={priceRange}
-              onValueChange={(value) => setPriceRange(value)}
+              onValueChange={(value) => setPriceRange(value as PriceRange)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select price range" />
