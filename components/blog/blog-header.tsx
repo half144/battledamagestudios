@@ -29,7 +29,7 @@ export function BlogHeader({ title, description }: BlogHeaderProps) {
         variant="outline"
         className="bg-red-500/10 hover:bg-red-500/20 border-red-500/20"
       >
-        <Link href="/blogs/editor">
+        <Link href="/Updates/editor">
           <Sparkles className="w-4 h-4 mr-2" />
           New Post
         </Link>

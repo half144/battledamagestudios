@@ -52,7 +52,7 @@ export default function BlogPost({ params }: any) {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <Button variant="ghost" asChild className="group hover:text-red-500">
-            <Link href="/blogs" className="flex items-center gap-2">
+            <Link href="/Updates" className="flex items-center gap-2">
               <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
               Back to Blogs
             </Link>
