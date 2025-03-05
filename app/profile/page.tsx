@@ -96,19 +96,7 @@ export default function ProfilePage() {
           whileHover={{ scale: 1.02 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <Card>
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <MapPin className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Shipping Address</p>
-                <p className="text-sm text-muted-foreground">
-                  2 saved addresses
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+       
         </motion.div>
       </motion.div>
 
@@ -134,10 +122,6 @@ export default function ProfilePage() {
               <div className="space-y-1">
                 <h2 className="text-2xl font-bold">John Doe</h2>
                 <p className="text-muted-foreground">john.doe@example.com</p>
-                <div className="flex gap-2 mt-2">
-                  <Badge>Premium Member</Badge>
-                  <Badge variant="outline">Since Jan 2025</Badge>
-                </div>
               </div>
             </CardContent>
           </Card>

@@ -12,10 +12,13 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -24,13 +27,24 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
+    setSuccess("");
+
+    const { email, password } = formData;
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-      router.push("/profile");
-    } catch (error) {
-      console.error("Login failed:", error);
+      if (error) {
+        setError(error.message);
+      } else {
+        setSuccess("Login successful! Redirecting...");
+        setTimeout(() => {
+          router.push("/profile"); // Redireciona para a página de perfil
+        }, 1500);
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -38,10 +52,7 @@ export default function LoginPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -56,9 +67,7 @@ export default function LoginPage() {
         <CardContent>
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Email
-              </label>
+              <label className="text-sm font-medium">Email</label>
               <Input
                 type="email"
                 name="email"
@@ -70,9 +79,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Password
-              </label>
+              <label className="text-sm font-medium">Password</label>
               <Input
                 type="password"
                 name="password"
@@ -83,6 +90,8 @@ export default function LoginPage() {
                 required
               />
             </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {success && <p className="text-green-500 text-sm">{success}</p>}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
