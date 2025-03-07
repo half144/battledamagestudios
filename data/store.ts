@@ -1,9 +1,9 @@
 export type ItemCategory =
-  | "Bundle"
-  | "Currency"
-  | "Cosmetic"
-  | "Character"
-  | "Battle Pass";
+  | "Bickering Bunch"
+  | "Legends of Terrestria"
+  | "Terrestria At War"
+  | "Terrestrian Era"
+  | "ChatFishes";
 
 export interface StoreItem {
   id: number;
@@ -26,7 +26,7 @@ export const storeItems: StoreItem[] = [
     description: "Premium character skins and exclusive weapons",
     featured: true,
     tags: ["Bundle", "Limited"],
-    category: "Bundle",
+    category: "Bickering Bunch",
     rating: 4.5,
   },
   {
@@ -36,7 +36,7 @@ export const storeItems: StoreItem[] = [
     image: "/3sis.png",
     description: "In-game currency for purchasing items and upgrades",
     tags: ["Currency"],
-    category: "Currency",
+    category: "Bickering Bunch",
     featured: false,
     rating: 4.0,
   },
@@ -62,9 +62,9 @@ export function addBlogPost(newPost: BlogPost) {
 }
 
 export const categories: ItemCategory[] = [
-  "Bundle",
-  "Currency",
-  "Cosmetic",
-  "Character",
-  "Battle Pass",
+  "Bickering Bunch",
+  "Legends of Terrestria",
+  "Terrestria At War",
+  "Terrestrian Era",
+  "ChatFishes",
 ];

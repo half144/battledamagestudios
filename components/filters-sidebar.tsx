@@ -37,16 +37,20 @@ export function FiltersSidebar({
               <Label htmlFor="all">All</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="clothing" id="clothing" />
-              <Label htmlFor="clothing">Clothing</Label>
+              <RadioGroupItem value="Bickering Bunch" id="Bickering Bunch" />
+              <Label htmlFor="Bickering Bunch">Bickering Bunch</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="accessories" id="accessories" />
-              <Label htmlFor="accessories">Accessories</Label>
+              <RadioGroupItem value="Legends of Terrestria" id="Legends of Terrestria" />
+              <Label htmlFor="Legends of Terrestria">Legends of Terrestria</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="equipment" id="equipment" />
-              <Label htmlFor="equipment">Equipment</Label>
+              <RadioGroupItem value="Terrestria At War" id="Terrestria At War" />
+              <Label htmlFor="equipment">Terrestria At War</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="ChatFishes" id="ChatFishes" />
+              <Label htmlFor="ChatFishes">ChatFishes</Label>
             </div>
           </div>
         </RadioGroup>
