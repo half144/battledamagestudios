@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SupabaseProvider } from "@/components/providers/supabase-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
@@ -27,9 +28,11 @@ export default function RootLayout({
           enableSystem={true}
           disableTransitionOnChange
         >
-          <Header />
-          <main>{children}</main>
-          <Footer />
+          <SupabaseProvider>
+            <Header />
+            <main>{children}</main>
+            <Footer />
+          </SupabaseProvider>
         </ThemeProvider>
       </body>
     </html>

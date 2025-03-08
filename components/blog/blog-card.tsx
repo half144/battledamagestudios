@@ -48,9 +48,7 @@ export function BlogCard({ blog, index }: BlogCardProps) {
           <CardDescription className="flex items-center gap-2 mt-2">
             <span className="text-red-500">{blog.date}</span>
             <span className="text-muted-foreground">·</span>
-            <span className="text-muted-foreground">
-              {blog.readTime}
-            </span>
+            <span className="text-muted-foreground">{blog.readTime}</span>
             <span className="text-muted-foreground">·</span>
             <span className="text-muted-foreground">
               By {blog.author?.name}
