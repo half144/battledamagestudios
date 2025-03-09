@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useSupabase } from "@/components/providers/supabase-provider";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,6 +23,7 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
+  const { supabase } = useSupabase();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +34,10 @@ export default function LoginPage() {
     const { email, password } = formData;
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
       if (error) {
         setError(error.message);

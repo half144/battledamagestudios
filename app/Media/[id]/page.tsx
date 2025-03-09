@@ -22,7 +22,6 @@ import {
 import { Media } from "../page";
 import { STLViewer } from "@/components/media/stl-viewer";
 import Image from "next/image";
-import { mockMedias } from "../mock-data"; // Importar os dados mock
 
 export default function MediaDetailPage() {
   const params = useParams();
@@ -37,12 +36,38 @@ export default function MediaDetailPage() {
       try {
         setLoading(true);
 
-        // Usar dados mock em vez de buscar do Supabase
-        const mediaItem = mockMedias.find((item) => item.id === id);
+        // Fetch data from Supabase
+        const { data, error } = await supabase
+          .from("medias")
+          .select("*")
+          .eq("id", id)
+          .single();
 
-        if (mediaItem) {
-          setMedia(mediaItem);
-          // Não precisamos atualizar visualizações quando usamos dados mock
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          // Format the data to match Media interface
+          const mediaItem = {
+            ...data,
+            // Ensure data_criacao is a string
+            data_criacao: data.data_criacao || new Date().toISOString(),
+            // Initialize visualizacoes if not present
+            visualizacoes: data.visualizacoes || 0,
+          };
+
+          setMedia(mediaItem as Media);
+
+          // Update view count
+          const { error: updateError } = await supabase
+            .from("medias")
+            .update({ visualizacoes: (mediaItem.visualizacoes || 0) + 1 })
+            .eq("id", id);
+
+          if (updateError) {
+            console.error("Error updating view count:", updateError);
+          }
         } else {
           setError("Media not found");
         }
@@ -57,7 +82,7 @@ export default function MediaDetailPage() {
     if (id) {
       fetchMediaDetails();
     }
-  }, [id]);
+  }, [id, supabase]);
 
   // Format file size
   const formatFileSize = (bytes?: number) => {
@@ -252,135 +277,127 @@ export default function MediaDetailPage() {
           )}
         </div>
 
-        {/* Details - Right column */}
-        <div className="lg:col-span-5 xl:col-span-4 space-y-6">
-          {/* Game Information */}
-          <div className="p-6 rounded-xl bg-gradient-to-r from-primary/5 to-primary/10 border border-border">
-            <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-              <TagIcon className="h-5 w-5 text-primary" />
-              Game
-            </h2>
-            <p className="text-muted-foreground">
-              This media is part of our{" "}
-              <span className="font-medium">{media.categoria}</span> game
-              collection.
-            </p>
-          </div>
-
-          {/* Media Details */}
+        {/* Metadata - Right column */}
+        <div className="lg:col-span-5 xl:col-span-4">
           <div className="p-6 rounded-xl bg-card border border-border">
-            <h2 className="text-xl font-semibold mb-4">Details</h2>
+            <h2 className="text-xl font-semibold mb-4">Media Information</h2>
+
             <div className="space-y-4">
-              <div className="flex justify-between items-center pb-2 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <CalendarIcon className="h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">Date</span>
-                </div>
-                <span>
-                  {new Date(media.data_criacao).toLocaleDateString("en-US")}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center pb-2 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <EyeIcon className="h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">Views</span>
-                </div>
-                <span>{media.visualizacoes.toLocaleString()}</span>
-              </div>
-
-              <div className="flex justify-between items-center pb-2 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <FileIcon className="h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">Format</span>
-                </div>
-                <span>{media.formato?.toUpperCase() || "Unknown"}</span>
-              </div>
-
-              <div className="flex justify-between items-center pb-2 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-primary"
-                  >
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                    <polyline points="3.29 7 12 12 20.71 7" />
-                    <line x1="12" y1="22" x2="12" y2="12" />
-                  </svg>
-                  <span className="text-muted-foreground">Size</span>
-                </div>
-                <span>{formatFileSize(media.tamanho_arquivo)}</span>
-              </div>
-
-              {media.duracao && (
-                <div className="flex justify-between items-center pb-2 border-b border-border">
-                  <div className="flex items-center gap-2">
-                    <ClockIcon className="h-4 w-4 text-primary" />
-                    <span className="text-muted-foreground">Duration</span>
+              {/* File size */}
+              {media.tamanho_arquivo && (
+                <div className="flex items-start gap-3">
+                  <FileIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h3 className="font-medium">File Size</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {formatFileSize(media.tamanho_arquivo)}
+                    </p>
                   </div>
-                  <span>{formatDuration(media.duracao)}</span>
+                </div>
+              )}
+
+              {/* Duration (for music and video) */}
+              {media.duracao && (
+                <div className="flex items-start gap-3">
+                  <ClockIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h3 className="font-medium">Duration</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDuration(media.duracao)}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Format */}
+              {media.formato && (
+                <div className="flex items-start gap-3">
+                  <FileIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h3 className="font-medium">Format</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {media.formato.toUpperCase()}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Date */}
+              <div className="flex items-start gap-3">
+                <CalendarIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <h3 className="font-medium">Date Added</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(media.data_criacao).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Views */}
+              <div className="flex items-start gap-3">
+                <EyeIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <h3 className="font-medium">Views</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {media.visualizacoes.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Tags */}
+              {media.tags && media.tags.length > 0 && (
+                <div className="flex items-start gap-3">
+                  <TagIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h3 className="font-medium">Tags</h3>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {media.tags.map((tag, index) => (
+                        <Badge key={index} variant="secondary">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Tags */}
-          {media.tags && media.tags.length > 0 && (
-            <div className="p-6 rounded-xl bg-card border border-border">
-              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <TagIcon className="h-5 w-5 text-primary" />
-                Tags
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {media.tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="px-3 py-1 text-sm"
-                  >
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Download buttons */}
-          <div className="p-6 rounded-xl bg-card border border-border">
-            <h2 className="text-xl font-semibold mb-4">Downloads</h2>
-            <div className="space-y-3">
-              <Button
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary transition-all"
-                onClick={() =>
-                  window.open(media.arquivo_principal_url, "_blank")
-                }
+            {/* Download button */}
+            <Button className="w-full mt-6 flex items-center gap-2" asChild>
+              <a
+                href={media.arquivo_principal_url}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <DownloadIcon className="h-4 w-4" />
                 Download{" "}
                 {media.tipo_media === "stl" ? "3D Model" : media.tipo_media}
-              </Button>
+              </a>
+            </Button>
 
-              {media.arquivo_secundario_url && (
-                <Button
-                  variant="outline"
-                  className="w-full flex items-center justify-center gap-2 transition-all"
-                  onClick={() =>
-                    window.open(media.arquivo_secundario_url, "_blank")
-                  }
+            {/* Secondary file download if available */}
+            {media.arquivo_secundario_url && (
+              <Button
+                variant="outline"
+                className="w-full mt-3 flex items-center gap-2"
+                asChild
+              >
+                <a
+                  href={media.arquivo_secundario_url}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <DownloadIcon className="h-4 w-4" />
                   Download Additional Files
-                </Button>
-              )}
-            </div>
+                </a>
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -16,7 +16,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockMedias } from "./mock-data"; // Import mock data
 
 // Define Media type based on the database schema
 export interface Media {
@@ -57,22 +56,35 @@ export default function MediaPage() {
       try {
         setLoading(true);
 
-        // Use mock data instead of Supabase fetch
-        const data = mockMedias;
+        // Fetch data from Supabase
+        const { data, error } = await supabase.from("medias").select("*");
+
+        if (error) {
+          throw error;
+        }
 
         if (data) {
-          setMedias(data as Media[]);
-          setFilteredMedias(data as Media[]);
+          // Convert data to match Media interface
+          const formattedData = data.map((item) => ({
+            ...item,
+            // Ensure data_criacao is a string
+            data_criacao: item.data_criacao || new Date().toISOString(),
+            // Initialize visualizacoes if not present
+            visualizacoes: item.visualizacoes || 0,
+          }));
+
+          setMedias(formattedData as Media[]);
+          setFilteredMedias(formattedData as Media[]);
 
           // Extract unique games (from categoria field)
           const uniqueGames = Array.from(
-            new Set(data.map((item: Media) => item.categoria))
+            new Set(data.map((item) => item.categoria))
           );
           setGames(uniqueGames);
 
           // Extract all unique tags
           const allUniqueTags = Array.from(
-            new Set(data.flatMap((item: Media) => item.tags || []))
+            new Set(data.flatMap((item) => item.tags || []))
           );
           setAllTags(allUniqueTags);
         }
@@ -249,7 +261,7 @@ export default function MediaPage() {
       {Object.keys(mediaByGame).map((game) => (
         <div key={game} className="mb-12">
           <h2 className="text-2xl font-bold mb-6">{game}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {mediaByGame[game].map((media, index) => (
               <MediaCard key={media.id} media={media} index={index} />
             ))}

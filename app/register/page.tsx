@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useSupabase } from "@/components/providers/supabase-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 
 export default function RegisterPage() {
-  const supabase = createClientComponentClient();
+  const { supabase } = useSupabase();
   const router = useRouter();
   const [formData, setFormData] = useState({
     username: "",
@@ -26,7 +26,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -68,7 +68,7 @@ export default function RegisterPage() {
         setSuccessMessage("Account created successfully! Redirecting...");
         setTimeout(() => {
           router.push("/profile");
-        }, 2000); 
+        }, 2000);
       }
     } catch (error: any) {
       setErrorMessage(error.message || "Registration failed.");
@@ -135,8 +135,12 @@ export default function RegisterPage() {
               />
             </div>
 
-            {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
-            {successMessage && <p className="text-green-500 text-sm">{successMessage}</p>}
+            {errorMessage && (
+              <p className="text-red-500 text-sm">{errorMessage}</p>
+            )}
+            {successMessage && (
+              <p className="text-green-500 text-sm">{successMessage}</p>
+            )}
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Creating account..." : "Create Account"}

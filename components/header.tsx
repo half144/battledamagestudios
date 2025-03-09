@@ -7,18 +7,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Cart } from "@/components/cart";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { supabase } from "@/lib/supabase";
+import { useSupabase } from "@/components/providers/supabase-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Adicionando tipos
 type UserType = {
@@ -35,26 +31,27 @@ export function Header() {
   const [user, setUser] = useState<UserType>(null);
   const [profile, setProfile] = useState<ProfileType>({ username: "User" });
   const [isLoading, setIsLoading] = useState(true);
+  const { supabase } = useSupabase();
 
   useEffect(() => {
     // Verificar o estado de autenticação atual
     const checkAuth = async () => {
       setIsLoading(true);
-      
+
       try {
         // Obter a sessão atual
         const { data } = await supabase.auth.getSession();
-        
+
         if (data.session) {
           setUser(data.session.user);
-          
+
           // Buscar o perfil do usuário
           const { data: profileData } = await supabase
-            .from('profile')
-            .select('username')
-            .eq('id', data.session.user.id)
+            .from("profile")
+            .select("username")
+            .eq("id", data.session.user.id)
             .single();
-            
+
           if (profileData) {
             setProfile(profileData);
           }
@@ -69,40 +66,42 @@ export function Header() {
         setIsLoading(false);
       }
     };
-    
+
     // Verificar autenticação na montagem do componente
     checkAuth();
-    
+
     // Configurar listener para mudanças de autenticação
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        setUser(session.user);
-        
-        // Buscar o perfil do usuário
-        const { data: profileData } = await supabase
-          .from('profile')
-          .select('username')
-          .eq('id', session.user.id)
-          .single();
-          
-        if (profileData) {
-          setProfile(profileData);
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_IN" && session) {
+          setUser(session.user);
+
+          // Buscar o perfil do usuário
+          const { data: profileData } = await supabase
+            .from("profile")
+            .select("username")
+            .eq("id", session.user.id)
+            .single();
+
+          if (profileData) {
+            setProfile(profileData);
+          }
+        } else if (event === "SIGNED_OUT") {
+          setUser(null);
+          setProfile({ username: "User" });
         }
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setProfile({ username: "User" });
       }
-    });
-    
+    );
+
     // Limpar listener na desmontagem
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   const isAuthenticated = !!user;
@@ -136,11 +135,11 @@ export function Header() {
               href="/Updates"
               className="text-muted-foreground hover:text-red-500 transition-colors"
             >
-              Updates 
+              Updates
             </Link>
             <Cart />
             <ThemeToggle />
-            
+
             {isAuthenticated && (
               <Link
                 href="/profile"
@@ -150,7 +149,7 @@ export function Header() {
                 Profile
               </Link>
             )}
-            
+
             {isLoading ? (
               <div className="h-9 w-16 bg-muted rounded animate-pulse"></div>
             ) : isAuthenticated ? (
@@ -158,22 +157,30 @@ export function Header() {
                 <DropdownMenuTrigger asChild>
                   <div className="flex items-center space-x-2 cursor-pointer">
                     <Avatar className="h-8 w-8 border border-red-500/50">
-                      <AvatarImage src="/placeholder-avatar.png" alt="Profile" />
+                      <AvatarImage
+                        src="/placeholder-avatar.png"
+                        alt="Profile"
+                      />
                       <AvatarFallback className="bg-red-500/10 text-red-500">
                         <User className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-medium">{profile.username}</span>
+                    <span className="text-sm font-medium">
+                      {profile.username}
+                    </span>
                   </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer flex items-center">
+                    <Link
+                      href="/profile"
+                      className="cursor-pointer flex items-center"
+                    >
                       <User className="mr-2 h-4 w-4" />
                       <span>My Profile</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={handleSignOut}
                     className="text-red-500 focus:text-red-500 focus:bg-red-500/10 cursor-pointer"
                   >
@@ -250,7 +257,7 @@ export function Header() {
             >
               Blogs
             </Link>
-            
+
             {isAuthenticated && (
               <Link
                 href="/profile"
@@ -261,7 +268,7 @@ export function Header() {
                 Profile
               </Link>
             )}
-            
+
             <div className="space-y-2">
               {isLoading ? (
                 <div className="h-9 w-full bg-muted rounded animate-pulse"></div>
@@ -269,15 +276,20 @@ export function Header() {
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2 p-2 border border-red-500/20 rounded-md">
                     <Avatar className="h-8 w-8 border border-red-500/50">
-                      <AvatarImage src="/placeholder-avatar.png" alt="Profile" />
+                      <AvatarImage
+                        src="/placeholder-avatar.png"
+                        alt="Profile"
+                      />
                       <AvatarFallback className="bg-red-500/10 text-red-500">
                         <User className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-medium">{profile.username}</span>
+                    <span className="text-sm font-medium">
+                      {profile.username}
+                    </span>
                   </div>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full border-red-500 text-red-500 hover:bg-red-500/10"
                     onClick={handleSignOut}
                   >

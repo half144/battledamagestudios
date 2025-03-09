@@ -17,10 +17,10 @@ import {
 
 interface MediaCardProps {
   media: Media;
-  index: number;
+  index?: number;
 }
 
-export function MediaCard({ media, index }: MediaCardProps) {
+export function MediaCard({ media, index = 0 }: MediaCardProps) {
   // Define icon based on media type
   const getMediaIcon = () => {
     switch (media.tipo_media) {
