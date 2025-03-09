@@ -137,6 +137,12 @@ export function Header() {
             >
               Updates
             </Link>
+            <Link
+              href="/media"
+              className="text-muted-foreground hover:text-red-500 transition-colors"
+            >
+              Media
+            </Link>
             <Cart />
             <ThemeToggle />
 
@@ -256,6 +262,13 @@ export function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               Blogs
+            </Link>
+            <Link
+              href="/media"
+              className="block px-3 py-2 text-muted-foreground hover:text-red-500 transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Media
             </Link>
 
             {isAuthenticated && (

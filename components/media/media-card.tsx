@@ -1,4 +1,4 @@
-import { Media } from "@/app/Media/page";
+import { Media } from "@/app/media/page";
 import { MagicCard } from "@/components/ui/magic-card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -163,7 +163,7 @@ export function MediaCard({ media, index = 0 }: MediaCardProps) {
             variant="outline"
             className="w-full group-hover:bg-primary/10 transition-colors flex justify-between"
           >
-            <Link href={`/Media/${media.id}`}>
+            <Link href={`/media/${media.id}`}>
               <span>View Details</span>
               <ArrowRightIcon className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
