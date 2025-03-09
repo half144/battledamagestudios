@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MediaListSkeleton } from "@/components/media/media-list-skeleton";
 
 // Define Media type based on the database schema
 export interface Media {
@@ -156,14 +157,12 @@ export default function MediaPage() {
     return acc;
   }, {} as Record<string, Media[]>);
 
-  return (
-    <div className="container mx-auto px-4 py-24 max-w-7xl">
-      <PageHeader
-        heading="Game Media Library"
-        text="Explore our collection of images, videos, music, and 3D models from our games"
-      />
+  const renderError = () => {
+    return <div className="text-center py-12 text-red-500">{error}</div>;
+  };
 
-      {/* Filter Section */}
+  const renderFilters = () => {
+    return (
       <div className="mb-8 space-y-4 mt-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input
@@ -223,51 +222,75 @@ export default function MediaPage() {
           </div>
         )}
       </div>
+    );
+  };
 
-      {/* Media Type Tabs */}
-      <Tabs
-        defaultValue="all"
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="mb-8"
-      >
-        <TabsList className="mb-4">
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="imagem">Images</TabsTrigger>
-          <TabsTrigger value="video">Videos</TabsTrigger>
-          <TabsTrigger value="musica">Music</TabsTrigger>
-          <TabsTrigger value="stl">3D Models</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      {/* Loading and Error States */}
-      {loading && <div className="text-center py-12">Loading media...</div>}
-      {error && <div className="text-center py-12 text-red-500">{error}</div>}
-
-      {/* Results Count */}
-      {!loading && !error && (
-        <div className="mb-4 text-muted-foreground">
-          Showing {filteredMedias.length} of {medias.length} items
-        </div>
-      )}
-
-      {/* Media Grid by Game */}
-      {!loading && !error && Object.keys(mediaByGame).length === 0 && (
+  const renderMediaGrid = () => {
+    if (Object.keys(mediaByGame).length === 0) {
+      return (
         <div className="text-center py-12">
           No media found matching your filters.
         </div>
-      )}
+      );
+    }
 
-      {Object.keys(mediaByGame).map((game) => (
-        <div key={game} className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">{game}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {mediaByGame[game].map((media, index) => (
-              <MediaCard key={media.id} media={media} index={index} />
-            ))}
-          </div>
+    return Object.keys(mediaByGame).map((game) => (
+      <div key={game} className="mb-12">
+        <h2 className="text-2xl font-bold mb-6">{game}</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {mediaByGame[game].map((media, index) => (
+            <MediaCard key={media.id} media={media} index={index} />
+          ))}
         </div>
-      ))}
+      </div>
+    ));
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return <MediaListSkeleton />;
+    }
+
+    if (error) {
+      return renderError();
+    }
+
+    return (
+      <>
+        <PageHeader
+          heading="Game Media Library"
+          text="Explore our collection of images, videos, music, and 3D models from our games"
+        />
+
+        {renderFilters()}
+
+        <Tabs
+          defaultValue="all"
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="mb-8"
+        >
+          <TabsList className="mb-4">
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="imagem">Images</TabsTrigger>
+            <TabsTrigger value="video">Videos</TabsTrigger>
+            <TabsTrigger value="musica">Music</TabsTrigger>
+            <TabsTrigger value="stl">3D Models</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <div className="mb-4 text-muted-foreground">
+          Showing {filteredMedias.length} of {medias.length} items
+        </div>
+
+        {renderMediaGrid()}
+      </>
+    );
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-24 max-w-7xl">
+      {renderContent()}
     </div>
   );
 }

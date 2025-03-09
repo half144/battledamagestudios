@@ -22,6 +22,7 @@ import {
 import { Media } from "../page";
 import { STLViewer } from "@/components/media/stl-viewer";
 import Image from "next/image";
+import { MediaDetailSkeleton } from "@/components/media/media-detail-skeleton";
 
 export default function MediaDetailPage() {
   const params = useParams();
@@ -189,11 +190,7 @@ export default function MediaDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        Loading media details...
-      </div>
-    );
+    return <MediaDetailSkeleton />;
   }
 
   if (error) {
