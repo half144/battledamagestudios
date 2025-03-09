@@ -19,7 +19,7 @@ import {
   CalendarIcon,
   DownloadIcon,
 } from "lucide-react";
-import { Media } from "../page";
+import { Media } from "@/types/media";
 import { STLViewer } from "@/components/media/stl-viewer";
 import Image from "next/image";
 import { MediaDetailSkeleton } from "@/components/media/media-detail-skeleton";

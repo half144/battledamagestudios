@@ -1,4 +1,4 @@
-import { Media } from "@/app/media/page";
+import { Media } from "@/types/media";
 import { MagicCard } from "@/components/ui/magic-card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";

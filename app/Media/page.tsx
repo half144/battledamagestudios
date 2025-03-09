@@ -17,24 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MediaListSkeleton } from "@/components/media/media-list-skeleton";
-
-// Define Media type based on the database schema..
-export interface Media {
-  id: string;
-  titulo: string;
-  descricao: string;
-  tipo_media: "imagem" | "video" | "musica" | "stl";
-  categoria: string; // Representa o jogo: Ex: Mixers Universe, The Bickering Bunch
-  thumbnail_url: string;
-  arquivo_principal_url: string;
-  arquivo_secundario_url?: string;
-  data_criacao: string;
-  tamanho_arquivo?: number;
-  formato?: string;
-  duracao?: number;
-  tags?: string[];
-  visualizacoes: number;
-}
+import { Media } from "@/types/media";
 
 export default function MediaPage() {
   const { supabase } = useSupabase();
