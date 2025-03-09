@@ -18,7 +18,7 @@ import { X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MediaListSkeleton } from "@/components/media/media-list-skeleton";
 
-// Define Media type based on the database schema
+// Define Media type based on the database schema..
 export interface Media {
   id: string;
   titulo: string;
