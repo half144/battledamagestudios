@@ -138,7 +138,7 @@ export function Header() {
               Updates
             </Link>
             <Link
-              href="/media"
+              href="/Media"
               className="text-muted-foreground hover:text-red-500 transition-colors"
             >
               Media
@@ -264,7 +264,7 @@ export function Header() {
               Blogs
             </Link>
             <Link
-              href="/media"
+              href="/Media"
               className="block px-3 py-2 text-muted-foreground hover:text-red-500 transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >

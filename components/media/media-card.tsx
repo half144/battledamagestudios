@@ -163,7 +163,7 @@ export function MediaCard({ media, index = 0 }: MediaCardProps) {
             variant="outline"
             className="w-full group-hover:bg-primary/10 transition-colors flex justify-between"
           >
-            <Link href={`/media/${media.id}`}>
+            <Link href={`/Media/${media.id}`}>
               <span>View Details</span>
               <ArrowRightIcon className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
