@@ -241,8 +241,8 @@ export default function MediaPage() {
     return (
       <>
         <PageHeader
-          heading="Game Media Library"
-          text="Explore our collection of images, videos, music, and 3D models from our games"
+          heading="Media Library"
+          text="Explore our collection of images, videos, music, and 3D models from our universe"
         />
 
         {renderFilters()}

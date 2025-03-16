@@ -1,18 +1,18 @@
 "use client";
 
 import React, { useState, useRef, Suspense, useEffect } from "react";
-import { Box, RotateCcw, AlertTriangle, Play, Pause } from "lucide-react";
+import { Box, RotateCcw, AlertTriangle, Play, Pause, RotateCw, RefreshCw } from "lucide-react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
-  useGLTF,
   Stage,
   OrbitControls,
   useProgress,
   Html,
-  Box as DreiBox,
 } from "@react-three/drei";
 import { Button } from "@/components/ui/button";
-import { Object3D, MeshStandardMaterial, DoubleSide, Color } from "three";
+import { Object3D, MeshStandardMaterial, DoubleSide, Vector3, BufferGeometry, MathUtils } from "three";
+import { STLLoader } from "three-stdlib";
+import { useLoader } from '@react-three/fiber';
 
 interface STLViewerProps {
   url: string;
@@ -55,21 +55,43 @@ function isValid3DModelURL(url: string): boolean {
   return extension ? validExtensions.includes(`.${extension}`) : false;
 }
 
-// Auto-rotating model wrapper
+// Auto-rotating model wrapper with improved multi-axis rotation
 function AutoRotate({
   children,
   isManuallyRotating,
   autoRotate,
+  rotationMode = "y",
 }: {
   children: React.ReactNode;
   isManuallyRotating: boolean;
   autoRotate: boolean;
+  rotationMode?: "y" | "x" | "all";
 }) {
   const groupRef = useRef<Object3D>(null);
+  const time = useRef(0);
 
   useFrame((_, delta) => {
     if (groupRef.current && !isManuallyRotating && autoRotate) {
-      groupRef.current.rotation.y += delta * 0.3; // Slower, smoother rotation
+      time.current += delta;
+      
+      if (rotationMode === "y" || rotationMode === "all") {
+        groupRef.current.rotation.y += delta * 0.25;
+      }
+      
+      if (rotationMode === "x" || rotationMode === "all") {
+        // Se for modo "all", usamos um movimento de balanço mais suave no eixo X
+        if (rotationMode === "all") {
+          groupRef.current.rotation.x = Math.sin(time.current * 0.5) * 0.15;
+        } else {
+          // Rotação constante no eixo X se for modo "x"
+          groupRef.current.rotation.x += delta * 0.15;
+        }
+      }
+      
+      // Adicionar um leve movimento no eixo Z para mais naturalidade na rotação completa
+      if (rotationMode === "all") {
+        groupRef.current.rotation.z = Math.sin(time.current * 0.3) * 0.05;
+      }
     }
   });
 
@@ -80,9 +102,11 @@ function AutoRotate({
 function FallbackCube({
   isRotating,
   autoRotate,
+  rotationMode,
 }: {
   isRotating: boolean;
   autoRotate: boolean;
+  rotationMode: "y" | "x" | "all";
 }) {
   const meshRef = useRef<Object3D>(null);
 
@@ -93,7 +117,7 @@ function FallbackCube({
   });
 
   return (
-    <AutoRotate isManuallyRotating={isRotating} autoRotate={autoRotate}>
+    <AutoRotate isManuallyRotating={isRotating} autoRotate={autoRotate} rotationMode={rotationMode}>
       <mesh ref={meshRef}>
         <boxGeometry args={[1.5, 1.5, 1.5]} />
         <meshStandardMaterial color="#FF5C5C" />
@@ -102,105 +126,80 @@ function FallbackCube({
   );
 }
 
-// Safe STL Model component
-function SafeSTLModel({
-  url,
-  isRotating,
-  autoRotate,
-}: {
-  url: string;
-  isRotating: boolean;
-  autoRotate: boolean;
-}) {
-  const [loadError, setLoadError] = useState<boolean>(!isValid3DModelURL(url));
-  const modelRef = useRef<Object3D>(null);
-
-  // If the URL is invalid, render the fallback cube
-  if (!isValid3DModelURL(url)) {
-    return (
-      <>
-        <ErrorDisplay message="O arquivo fornecido não é um modelo 3D válido." />
-        <FallbackCube isRotating={isRotating} autoRotate={autoRotate} />
-      </>
-    );
-  }
-
-  try {
-    // Custom error handling for GLTFLoader
-    const { scene } = useGLTF(url, undefined, undefined, (err) => {
-      console.error("Error loading 3D model:", err);
-      setLoadError(true);
-    });
-
-    // Handle rotation animation
-    useFrame((_, delta) => {
-      if (isRotating && modelRef.current) {
-        modelRef.current.rotation.y += delta * 0.5;
-      }
-    });
-
-    if (!scene) {
-      return (
-        <>
-          <ErrorDisplay />
-          <FallbackCube isRotating={isRotating} autoRotate={autoRotate} />
-        </>
-      );
-    }
-
-    return (
-      <>
-        {loadError && <ErrorDisplay />}
-        {loadError ? (
-          <FallbackCube isRotating={isRotating} autoRotate={autoRotate} />
-        ) : (
-          <AutoRotate isManuallyRotating={isRotating} autoRotate={autoRotate}>
-            <primitive
-              ref={modelRef}
-              object={scene}
-              scale={0.8}
-              position={[0, 0, 0]}
-            />
-          </AutoRotate>
-        )}
-      </>
-    );
-  } catch (error) {
-    console.error("Error in STL model component:", error);
-    return (
-      <>
-        <ErrorDisplay />
-        <FallbackCube isRotating={isRotating} autoRotate={autoRotate} />
-      </>
-    );
-  }
-}
-
-// STL Model component with error boundary
+// STL Model component specifically for STL files
 function STLModel({
   url,
   isRotating,
   autoRotate,
+  rotationMode,
 }: {
   url: string;
   isRotating: boolean;
   autoRotate: boolean;
+  rotationMode: "y" | "x" | "all";
 }) {
-  try {
+  const [loadError, setLoadError] = useState<boolean>(!isValid3DModelURL(url));
+  const modelRef = useRef<Object3D>(null);
+  
+  // Use STLLoader instead of GLTF for STL files
+  const geometry = useLoader(STLLoader, url, undefined, (error) => {
+    console.error("Error loading STL model:", error);
+    setLoadError(true);
+  });
+
+  // Center and normalize the model on load
+  useEffect(() => {
+    if (geometry && modelRef.current) {
+      const bufferGeometry = geometry as BufferGeometry;
+      // Center the geometry
+      (bufferGeometry as any).center();
+      
+      // Normalize scale to fit in view
+      (bufferGeometry as any).computeBoundingBox();
+      const boundingBox = (bufferGeometry as any).boundingBox;
+      if (boundingBox) {
+        const size = boundingBox.getSize(new Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 2.5 / maxDim; // Scale to fit nicely in view
+        modelRef.current.scale.set(scale, scale, scale);
+      }
+    }
+  }, [geometry]);
+
+  // If there's an error or the URL is invalid, show fallback
+  if (loadError || !geometry || !isValid3DModelURL(url)) {
     return (
-      <SafeSTLModel url={url} isRotating={isRotating} autoRotate={autoRotate} />
+      <>
+        <ErrorDisplay message="O arquivo fornecido não é um modelo 3D válido ou não pôde ser carregado." />
+        <FallbackCube isRotating={isRotating} autoRotate={autoRotate} rotationMode={rotationMode} />
+      </>
     );
-  } catch (error) {
-    console.error("Uncaught error in STL model:", error);
-    return <FallbackCube isRotating={isRotating} autoRotate={autoRotate} />;
   }
+
+  return (
+    <AutoRotate isManuallyRotating={isRotating} autoRotate={autoRotate} rotationMode={rotationMode}>
+      <mesh ref={modelRef}>
+        <bufferGeometry attach="geometry" {...geometry} />
+        <meshStandardMaterial 
+          color="#8fb8e0" 
+          side={DoubleSide} 
+          roughness={0.5} 
+          metalness={0.2}
+          flatShading={false}
+        />
+      </mesh>
+    </AutoRotate>
+  );
 }
 
+// Main component with error handling
 export function STLViewer({ url }: STLViewerProps) {
   const [isRotating, setIsRotating] = useState(false);
   const [autoRotate, setAutoRotate] = useState(true);
   const [isUserInteracting, setIsUserInteracting] = useState(false);
+  const [rotationMode, setRotationMode] = useState<"y" | "x" | "all">("all");
   const interactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const controlsRef = useRef<any>(null);
 
   // Toggle manual rotation animation
   const toggleRotation = () => {
@@ -215,6 +214,26 @@ export function STLViewer({ url }: STLViewerProps) {
     setAutoRotate(!autoRotate);
     if (!autoRotate) {
       setIsRotating(false);
+    }
+  };
+
+  // Cycle through rotation modes
+  const cycleRotationMode = () => {
+    if (!autoRotate) {
+      setAutoRotate(true);
+      setIsRotating(false);
+    }
+    setRotationMode(current => {
+      if (current === "y") return "x";
+      if (current === "x") return "all";
+      return "y";
+    });
+  };
+
+  // Reset camera position
+  const resetView = () => {
+    if (controlsRef.current) {
+      controlsRef.current.reset();
     }
   };
 
@@ -244,37 +263,88 @@ export function STLViewer({ url }: STLViewerProps) {
 
   return (
     <div className="w-full aspect-video bg-muted/20 rounded-md border relative">
-      <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 6], fov: 45 }}>
+      <Canvas 
+        shadows
+        dpr={[1, 2]} 
+        camera={{ position: [0, 2, 10], fov: 40 }} // Posição inicial mais afastada e ligeiramente elevada
+        gl={{ antialias: true }}
+      >
         <Suspense fallback={<Loader />}>
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[10, 10, 5]} intensity={1} />
+          <ambientLight intensity={0.6} />
+          <hemisphereLight intensity={0.5} color="#ffffff" groundColor="#bbbbff" />
+          <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+          <directionalLight position={[-10, -10, -5]} intensity={0.5} />
+          <directionalLight position={[0, 10, 0]} intensity={0.7} />
+          
           <Stage
             environment="city"
             shadows
             intensity={0.5}
             scale={1.0}
             adjustCamera={false}
+            preset="soft"
           >
             <STLModel
               url={url}
               isRotating={isRotating}
               autoRotate={autoRotate && !isUserInteracting}
+              rotationMode={rotationMode}
             />
           </Stage>
+          
           <OrbitControls
+            ref={controlsRef}
             makeDefault
-            minDistance={1.5}
-            maxDistance={15}
+            minDistance={3}
+            maxDistance={20}
             target={[0, 0, 0]}
             onChange={handleUserInteraction}
             onStart={handleUserInteraction}
             enableZoom={true}
             zoomSpeed={1.2}
+            rotateSpeed={1.0} // Velocidade de rotação padrão
+            enableDamping={true}
+            dampingFactor={0.1}
+            enablePan={true}
+            minPolarAngle={Math.PI * 0.05} // Limita rotação vertical mínima (quase topo)
+            maxPolarAngle={Math.PI * 0.95} // Limita rotação vertical máxima (quase base)
           />
         </Suspense>
       </Canvas>
 
+      {/* Instruções simplificadas */}
+      <div className="absolute top-3 left-3 bg-background/60 backdrop-blur-sm p-2 rounded-md text-xs text-muted-foreground">
+        <p>Arraste para rotacionar | Scroll para zoom | Shift+arraste para mover</p>
+      </div>
+      
+      {/* Controles */}
       <div className="absolute bottom-4 right-4 flex gap-2">
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={resetView}
+          className="bg-background/80 backdrop-blur-sm"
+          title="Resetar visualização"
+        >
+          <RefreshCw className="h-4 w-4" />
+        </Button>
+
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={cycleRotationMode}
+          className="bg-background/80 backdrop-blur-sm"
+          title={
+            rotationMode === "y" 
+              ? "Rotação horizontal" 
+              : rotationMode === "x" 
+                ? "Rotação vertical" 
+                : "Rotação completa"
+          }
+        >
+          <RotateCw className="h-4 w-4" />
+        </Button>
+
         <Button
           variant="secondary"
           size="icon"
