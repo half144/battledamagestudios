@@ -113,7 +113,7 @@ export default function MediaDetailPage() {
         return (
           <div className="relative w-full aspect-video bg-black flex items-center justify-center">
             <Image
-              src={media.arquivo_principal_url}
+              src={media.arquivo_principal_url || "/placeholder-image.jpg"}
               alt={media.titulo}
               fill
               className="object-contain"
@@ -141,7 +141,7 @@ export default function MediaDetailPage() {
           <div className="w-full bg-gradient-to-r from-primary/5 to-primary/10 p-8">
             <div className="mb-6 max-w-md mx-auto">
               <Image
-                src={media.thumbnail_url}
+                src={media.thumbnail_url || "/placeholder-image.jpg"}
                 alt={media.titulo}
                 width={400}
                 height={400}
@@ -162,7 +162,9 @@ export default function MediaDetailPage() {
       case "stl":
         return (
           <div className="w-full aspect-video bg-gradient-to-r from-primary/5 to-primary/10 p-4">
-            {media.arquivo_secundario_url && <STLViewer url={media.arquivo_secundario_url} />}
+            {media.arquivo_secundario_url && (
+              <STLViewer url={media.arquivo_secundario_url} />
+            )}
           </div>
         );
 

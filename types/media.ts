@@ -16,4 +16,5 @@ export interface Media {
   data_criacao: string;
   created_at: string;
   formato?: string;
+  duracao?: number;
 }
