@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useProfileStore } from "@/store/profile";
 
 // Adicionando tipos
 type UserType = {
@@ -29,41 +30,49 @@ type ProfileType = {
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<UserType>(null);
-  const [profile, setProfile] = useState<ProfileType>({ username: "User" });
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    profile,
+    isLoading,
+    isAuthenticated,
+    setProfile,
+    setLoading,
+    clearProfile,
+  } = useProfileStore();
   const { supabase } = useSupabase();
 
   useEffect(() => {
     // Verificar o estado de autenticação atual
     const checkAuth = async () => {
-      setIsLoading(true);
+      setLoading(true);
 
       try {
         // Obter a sessão atual
         const { data } = await supabase.auth.getSession();
 
         if (data.session) {
+          console.log("data.session", data.session);
           setUser(data.session.user);
 
           // Buscar o perfil do usuário
           const { data: profileData } = await supabase
-            .from("profile")
-            .select("username")
+            .from("profiles")
+            .select("*")
             .eq("id", data.session.user.id)
             .single();
+
+          console.log("profileData", profileData);
 
           if (profileData) {
             setProfile(profileData);
           }
         } else {
           setUser(null);
-          setProfile({ username: "User" });
+          clearProfile();
         }
       } catch (error) {
         console.error("Auth error:", error);
         setUser(null);
-      } finally {
-        setIsLoading(false);
+        clearProfile();
       }
     };
 
@@ -78,8 +87,8 @@ export function Header() {
 
           // Buscar o perfil do usuário
           const { data: profileData } = await supabase
-            .from("profile")
-            .select("username")
+            .from("profiles")
+            .select("*")
             .eq("id", session.user.id)
             .single();
 
@@ -88,7 +97,7 @@ export function Header() {
           }
         } else if (event === "SIGNED_OUT") {
           setUser(null);
-          setProfile({ username: "User" });
+          clearProfile();
         }
       }
     );
@@ -97,14 +106,12 @@ export function Header() {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [supabase, setProfile, setLoading, clearProfile]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     window.location.href = "/";
   };
-
-  const isAuthenticated = !!user;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-red-500/20">
@@ -172,7 +179,7 @@ export function Header() {
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium">
-                      {profile.username}
+                      {profile?.username || "User"}
                     </span>
                   </div>
                 </DropdownMenuTrigger>
@@ -298,7 +305,7 @@ export function Header() {
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium">
-                      {profile.username}
+                      {profile?.username || "User"}
                     </span>
                   </div>
                   <Button

@@ -2,9 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useSupabase } from "@/components/providers/supabase-provider";
+import { useProfileStore } from "@/store/profile";
 import { MediaCard } from "@/components/media/media-card";
 import { PageHeader } from "@/components/page-header";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -20,7 +24,9 @@ import { MediaListSkeleton } from "@/components/media/media-list-skeleton";
 import { Media } from "@/types/media";
 
 export default function MediaPage() {
+  const router = useRouter();
   const { supabase } = useSupabase();
+  const { profile } = useProfileStore();
   const [medias, setMedias] = useState<Media[]>([]);
   const [filteredMedias, setFilteredMedias] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
@@ -240,10 +246,33 @@ export default function MediaPage() {
 
     return (
       <>
-        <PageHeader
-          heading="Game Media Library"
-          text="Explore our collection of images, videos, music, and 3D models from our games"
-        />
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6">
+          <PageHeader
+            heading="Media Library"
+            text="Explore images, videos, music, and 3D models from Battle Damage Studios games"
+          />
+
+          <div className="flex items-center gap-2 mt-4 lg:mt-0">
+            {profile?.role === "admin" && (
+              <>
+                <Button
+                  onClick={() => router.push("/Media/dashboard")}
+                  variant="outline"
+                  className="flex items-center gap-1"
+                >
+                  <span>Dashboard</span>
+                </Button>
+                <Button
+                  onClick={() => router.push("/Media/criar")}
+                  className="flex items-center gap-1"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  <span>Nova Mídia</span>
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
 
         {renderFilters()}
 
