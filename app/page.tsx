@@ -25,14 +25,14 @@ import { MagicCard } from "@/components/ui/magic-card";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import Image from "next/image";
 const socialLinks = [
-  { icon: FaTwitter, url: "#" }, 
-  { icon: FaPatreon, url: "#" },
-  { icon: FaReddit, url: "#" },
-  { icon: FaTwitch, url: "#" },
-  { icon: FaSteam, url: "#" },
-  { icon: FaYoutube, url: "#" },
-  { icon: FaDiscord, url: "#" },
-  { icon: SiStreamlabs, url: "#" }, 
+  { icon: FaTwitter, url: "https://x.com/BattleDamageS" }, 
+  { icon: FaPatreon, url: "https://www.patreon.com/BickeringBunch" },
+  { icon: FaReddit, url: "https://www.reddit.com/r/Legends_of_Terrestria/" },
+  { icon: FaTwitch, url: "https://www.twitch.tv/thebickeringbunch" },
+  { icon: FaSteam, url: "https://steamcommunity.com/groups/Bickeringbunch" },
+  { icon: FaYoutube, url: "https://www.youtube.com/c/TheBickeringBunch" },
+  { icon: FaDiscord, url: "https://discord.com/invite/vn3z9hR" },
+  { icon: SiStreamlabs, url: "https://streamlabs.com/thebickeringbunch/tip" }, 
 ];
 
 const container = {

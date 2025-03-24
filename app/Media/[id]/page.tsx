@@ -162,7 +162,7 @@ export default function MediaDetailPage() {
       case "stl":
         return (
           <div className="w-full aspect-video bg-gradient-to-r from-primary/5 to-primary/10 p-4">
-            <STLViewer url={media.arquivo_principal_url} />
+            {media.arquivo_secundario_url && <STLViewer url={media.arquivo_secundario_url} />}
           </div>
         );
 

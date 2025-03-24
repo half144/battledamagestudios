@@ -8,7 +8,7 @@ const characters = [
     {
         id: 1,
         name: "Celeste",
-        portrait: "Celeste-portrait.jpg",
+        portrait: "Celeste-Portrait.jpg",
         detailImage: "Celeste-detail.jpg",
         description: "Celeste is a powerful sorceress who wields the elements to protect her homeland.\n " +
                 "She is a fierce warrior and a loyal friend, always ready to stand up for what is right.\n" +

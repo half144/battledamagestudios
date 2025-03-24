@@ -12,7 +12,7 @@ export function Footer() {
               <span className="text-xl font-bold">Battle Damage Studios</span>
             </Link>
             <p className="text-muted-foreground">
-              Join millions of players in the ultimate anime gaming experience.
+              Join Our Community
             </p>
           </div>
 
@@ -21,26 +21,26 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/#features"
+                  href="/Media"
                   className="text-muted-foreground hover:text-red-500 transition-colors"
                 >
-                  Features
+                 Media 
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/#characters"
+                  href="/Updates"
                   className="text-muted-foreground hover:text-red-500 transition-colors"
                 >
-                  Characters
+                 Updates 
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/#stats"
+                  href="/#"
                   className="text-muted-foreground hover:text-red-500 transition-colors"
                 >
-                  Stats
+                  Social
                 </Link>
               </li>
             </ul>
@@ -51,7 +51,7 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="#"
+                  href="https://discord.com/invite/vn3z9hR"
                   className="text-muted-foreground hover:text-red-500 transition-colors"
                 >
                   Discord
@@ -59,7 +59,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="https://x.com/BattleDamageS#"
                   className="text-muted-foreground hover:text-red-500 transition-colors"
                 >
                   Twitter
@@ -67,7 +67,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="https://www.youtube.com/c/TheBickeringBunch#"
                   className="text-muted-foreground hover:text-red-500 transition-colors"
                 >
                   YouTube
