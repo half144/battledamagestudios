@@ -142,7 +142,7 @@ export function Header() {
               href="/Updates"
               className="text-muted-foreground hover:text-red-500 transition-colors"
             >
-              Updates
+              News
             </Link>
             <Link
               href="/Media"

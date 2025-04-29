@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { TextAnimate } from "@/components/ui/text-animate";
 import Image from "next/image";
-import CharactersGallery from "./Components/CharactersGallery"; // Ajuste o caminho conforme sua estrutura
+import CharactersGallery from "./Components/CharactersGallery"; 
 
 type SectionKeys = 'About' | 'Story' | 'Characters' | 'Systems' | 'Steam';
 
