@@ -6,37 +6,54 @@ import { ArrowLeft, Calendar, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { MagicCard } from "@/components/ui/magic-card";
-import { use } from "react";
-import { BlogPost as IBlogPost } from "@/data/store";
+import { useEffect, useState } from "react";
+import type { BlogPost } from "@/lib/supabase";
+import { fetchPostById } from "@/lib/posts";
+import { useAuth } from "@/hooks/useAuth";
 
-const getBlogPost = (id: string): IBlogPost => ({
-  id,
-  title: "The Evolution of Anime Gaming",
-  description: "Exploring how anime games have transformed the gaming industry over the past decade, from simple adaptations to complex narrative experiences.",
-  date: "January 31, 2025",
-  readTime: "5 min read",
-  image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1000&auto=format&fit=crop",
-  content: `
-    <p>The world of anime gaming has undergone a remarkable transformation over the past decade. From simple 2D fighters to complex, narrative-driven experiences, the evolution has been nothing short of extraordinary.</p>
-    
-    <h2>The Early Days</h2>
-    <p>In the beginning, anime games were primarily simple adaptations of popular series, often lacking in depth and merely serving as fan service. However, as technology advanced and gaming audiences matured, developers began to see the potential for more sophisticated experiences.</p>
-    
-    <h2>The Modern Era</h2>
-    <p>Today's anime games are pushing boundaries in both visual fidelity and gameplay mechanics. At Battle Damage Studios, we're proud to be at the forefront of this evolution, creating experiences that honor the anime aesthetic while delivering compelling gameplay.</p>
-    
-    <h2>Looking to the Future</h2>
-    <p>As we look ahead, the possibilities are endless. With advancing technology and growing global appreciation for anime aesthetics, we're entering a golden age of anime gaming.</p>
-  `,
-  author: {
-    name: "Alex Johnson",
-    avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop"
+export default function BlogPost({ params }: { params: { id: string } }) {
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { isAdmin } = useAuth();
+
+  useEffect(() => {
+    const loadPost = async () => {
+      setLoading(true);
+      try {
+        const fetchedPost = await fetchPostById(params.id);
+        setPost(fetchedPost);
+      } catch (error) {
+        console.error("Error loading post:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPost();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-24 flex justify-center items-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-500"></div>
+        <p className="ml-2 text-gray-500">Loading post...</p>
+      </div>
+    );
   }
-});
 
-export default function BlogPost({ params }: any) {
-  const resolvedParams: any = use(params);
-  const post = getBlogPost(resolvedParams.id);
+  if (!post) {
+    return (
+      <div className="container mx-auto px-4 py-24 text-center">
+        <h2 className="text-2xl font-bold mb-4">Post not found</h2>
+        <Button variant="ghost" asChild className="group hover:text-red-500">
+          <Link href="/Updates" className="flex items-center gap-2">
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            Back to Blogs
+          </Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-24">
@@ -46,17 +63,33 @@ export default function BlogPost({ params }: any) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Button variant="ghost" asChild className="group hover:text-red-500">
-            <Link href="/Updates" className="flex items-center gap-2">
-              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-              Back to Blogs
-            </Link>
-          </Button>
+        <motion.div className="flex justify-between items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Button variant="ghost" asChild className="group hover:text-red-500">
+              <Link href="/Updates" className="flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                Back to Blogs
+              </Link>
+            </Button>
+          </motion.div>
+          
+          {isAdmin && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <Button variant="outline" asChild className="group hover:text-red-500 hover:border-red-500">
+                <Link href={`/Updates/editor?edit=${post.id}`} className="flex items-center gap-2">
+                  Edit Post
+                </Link>
+              </Button>
+            </motion.div>
+          )}
         </motion.div>
 
         <motion.div
@@ -108,18 +141,20 @@ export default function BlogPost({ params }: any) {
             gradientTo="rgb(185 28 28)"
             gradientOpacity={0.2}
           >
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-red-500/20">
-                <div
-                  className="w-full h-full bg-cover bg-center transform transition-all duration-500 group-hover:scale-110"
-                  style={{ backgroundImage: `url(${post.author?.avatar || '/default-avatar.png'})` }}
-                />
+            {post.author && (
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-red-500/20">
+                  <div
+                    className="w-full h-full bg-cover bg-center transform transition-all duration-500 group-hover:scale-110"
+                    style={{ backgroundImage: `url(${post.author.avatar || '/default-avatar.png'})` }}
+                  />
+                </div>
+                <div>
+                  <div className="font-semibold text-lg">{post.author.name || 'Anonymous'}</div>
+                  <div className="text-sm text-red-500">Author</div>
+                </div>
               </div>
-              <div>
-                <div className="font-semibold text-lg">{post.author?.name || 'Anonymous'}</div>
-                <div className="text-sm text-red-500">Author</div>
-              </div>
-            </div>
+            )}
 
             <div
               className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-red-500"

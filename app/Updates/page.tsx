@@ -1,99 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { BlogPost } from "@/data/store";
+import { BlogPost } from "@/lib/supabase";
 import { BlogHeader } from "@/components/blog/blog-header";
 import { BlogSearch } from "@/components/blog/blog-search";
 import { BlogCard } from "@/components/blog/blog-card";
-
-const sampleBlogs: BlogPost[] = [
-  {
-    id: "1",
-    title: "The Evolution of Anime Gaming",
-    description:
-      "Exploring how anime games have transformed the gaming industry over the past decade, from simple adaptations to complex narrative experiences.",
-    date: "January 31, 2025",
-    readTime: "5 min read",
-    image:
-      "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1000&auto=format&fit=crop",
-    content: "Full article content will be loaded dynamically.",
-    author: {
-      name: "Alex Johnson",
-      avatar:
-        "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
-    },
-  },
-  {
-    id: "2",
-    title: "Behind the Scenes: Character Design",
-    description:
-      "A deep dive into our character design process and what makes our characters unique. Learn about our inspiration and creative process.",
-    date: "January 30, 2025",
-    readTime: "8 min read",
-    image:
-      "https://images.unsplash.com/photo-1534423861386-85a16f5d13fd?q=80&w=1000&auto=format&fit=crop",
-    content: "Full article content will be loaded dynamically.",
-    author: {
-      name: "Alex Johnson",
-      avatar:
-        "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
-    },
-  },
-  {
-    id: "3",
-    title: "The Future of Gaming Technology",
-    description:
-      "Discover the latest trends in gaming technology and how they're shaping the future of interactive entertainment.",
-    date: "January 29, 2025",
-    readTime: "6 min read",
-    image:
-      "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1000&auto=format&fit=crop",
-    content: "Full article content will be loaded dynamically.",
-    author: {
-      name: "Alex Johnson",
-      avatar:
-        "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
-    },
-  },
-  {
-    id: "4",
-    title: "Community Spotlight: Player Stories",
-    description:
-      "Highlighting amazing stories from our community members and their experiences in the world of Battle Damage Studios.",
-    date: "January 28, 2025",
-    readTime: "4 min read",
-    image:
-      "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?q=80&w=1000&auto=format&fit=crop",
-    content: "Full article content will be loaded dynamically.",
-    author: {
-      name: "Alex Johnson",
-      avatar:
-        "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
-    },
-  },
-  {
-    id: "5",
-    title: "Art Direction in Modern Gaming",
-    description:
-      "An in-depth look at how art direction shapes the gaming experience and creates immersive worlds.",
-    date: "January 27, 2025",
-    readTime: "7 min read",
-    image:
-      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000&auto=format&fit=crop",
-    content: "Full article content will be loaded dynamically.",
-    author: {
-      name: "Alex Johnson",
-      avatar:
-        "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop",
-    },
-  },
-];
+import { fetchPosts } from "@/lib/posts";
+import { useAuth } from "@/hooks/useAuth";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 
 export default function BlogsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { isAdmin } = useAuth();
 
-  const filteredBlogs = sampleBlogs.filter(
+  useEffect(() => {
+    const loadPosts = async () => {
+      setLoading(true);
+      try {
+        const posts = await fetchPosts();
+        setBlogs(posts);
+      } catch (error) {
+        console.error("Error loading posts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPosts();
+  }, []);
+
+  const filteredBlogs = blogs.filter(
     (blog) =>
       blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       blog.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -106,25 +47,58 @@ export default function BlogsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <BlogHeader
-          title="Mixers Updates"
-          description="Stay updated with the latest news, development insights, and community stories"
-        />
+        {/* Header centralizado */}
+        <div className="text-center">
+          <BlogHeader
+            title="Mixers Updates"
+            description="Stay updated with the latest news, development insights, and community stories"
+          />
+          
+          {/* Botão New Post centralizado e apenas para admin */}
+          {isAdmin && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="mt-6"
+            >
+              <Button asChild className="flex items-center gap-2 bg-red-500 hover:bg-red-600">
+                <Link href="/Updates/editor">
+                  <PlusCircle className="w-5 h-5" />
+                  New Post
+                </Link>
+              </Button>
+            </motion.div>
+          )}
+        </div>
 
         <BlogSearch
           searchQuery={searchQuery}
           onSearchChange={(value) => setSearchQuery(value)}
         />
 
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          {filteredBlogs.map((blog, index) => (
-            <BlogCard key={blog.id} blog={blog} index={index} />
-          ))}
-        </motion.div>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-500"></div>
+            <p className="mt-2 text-gray-500">Loading posts...</p>
+          </div>
+        ) : (
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {filteredBlogs.length > 0 ? (
+              filteredBlogs.map((blog, index) => (
+                <BlogCard key={blog.id} blog={blog} index={index} />
+              ))
+            ) : (
+              <div className="col-span-3 text-center py-12">
+                <p className="text-xl text-gray-500">No posts found</p>
+              </div>
+            )}
+          </motion.div>
+        )}
       </motion.div>
     </div>
   );
