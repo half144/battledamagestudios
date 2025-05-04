@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState, Suspense, lazy } from "react";
-import { useParams } from "next/navigation";
-import { useSupabase } from "@/components/providers/supabase-provider";
-import { PageHeader } from "@/components/page-header";
+import { useState, Suspense, lazy } from "react";
+import { Media } from "@/types/media";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -19,7 +17,6 @@ import {
   CalendarIcon,
   DownloadIcon,
 } from "lucide-react";
-import { Media } from "@/types/media";
 import Image from "next/image";
 import { MediaDetailSkeleton } from "@/components/media/media-detail-skeleton";
 
@@ -29,71 +26,11 @@ const MediaDescription = lazy(
 );
 const MediaMetadata = lazy(() => import("@/components/media/media-metadata"));
 
-export default function MediaDetailPage() {
-  const params = useParams();
-  const { id } = params;
-  const { supabase } = useSupabase();
-  const [media, setMedia] = useState<Media | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface MediaDetailClientProps {
+  media: Media;
+}
 
-  useEffect(() => {
-    const fetchMediaDetails = async () => {
-      try {
-        setLoading(true);
-
-        // Otimização: buscar apenas os campos necessários
-        const { data, error } = await supabase
-          .from("medias")
-          .select(
-            "id, titulo, descricao, tipo_media, categoria, arquivo_principal_url, arquivo_secundario_url, thumbnail_url, data_criacao, visualizacoes, tags, formato, duracao, tamanho_arquivo"
-          )
-          .eq("id", id)
-          .single();
-
-        if (error) {
-          throw error;
-        }
-
-        if (data) {
-          // Format the data to match Media interface
-          const mediaItem = {
-            ...data,
-            data_criacao: data.data_criacao || new Date().toISOString(),
-            visualizacoes: data.visualizacoes || 0,
-          };
-
-          setMedia(mediaItem as Media);
-
-          // Atualizar contador de visualizações em uma operação separada
-          // que não bloqueia a renderização da página
-          setTimeout(() => {
-            supabase
-              .from("medias")
-              .update({ visualizacoes: (mediaItem.visualizacoes || 0) + 1 })
-              .eq("id", id)
-              .then(({ error }) => {
-                if (error) {
-                  console.error("Error updating view count:", error);
-                }
-              });
-          }, 100);
-        } else {
-          setError("Media not found");
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      fetchMediaDetails();
-    }
-  }, [id, supabase]);
-
+export default function MediaDetailClient({ media }: MediaDetailClientProps) {
   // Format file size
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return "Unknown";
@@ -115,8 +52,6 @@ export default function MediaDetailPage() {
 
   // Render the media content based on type
   const renderMediaContent = () => {
-    if (!media) return null;
-
     switch (media.tipo_media) {
       case "imagem":
         return (
@@ -190,18 +125,19 @@ export default function MediaDetailPage() {
               Faça o download do arquivo para visualizar o modelo 3D completo em
               seu software preferido
             </p>
-            {media.thumbnail_url && (
-              <div className="mt-6 relative w-full max-w-md h-60 mx-auto">
-                <Image
-                  src={media.thumbnail_url}
-                  alt={media.titulo}
-                  fill
-                  className="object-contain rounded-md shadow-md"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  priority
-                />
-              </div>
-            )}
+            <div className="mt-6 relative w-full max-w-md h-60 mx-auto">
+              <Image
+                src={media.thumbnail_url || "/placeholder-image.jpg"}
+                alt={media.titulo}
+                fill
+                className="object-contain rounded-md shadow-md"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                quality={80}
+                placeholder="blur"
+                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+                priority
+              />
+            </div>
           </div>
         );
 
@@ -212,8 +148,6 @@ export default function MediaDetailPage() {
 
   // Get icon for media type
   const getMediaTypeIcon = () => {
-    if (!media) return null;
-
     switch (media.tipo_media) {
       case "imagem":
         return <ImageIcon className="h-5 w-5" />;
@@ -227,26 +161,6 @@ export default function MediaDetailPage() {
         return null;
     }
   };
-
-  if (loading) {
-    return <MediaDetailSkeleton />;
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-12 text-center text-red-500">
-        {error}
-      </div>
-    );
-  }
-
-  if (!media) {
-    return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        Media not found
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto px-4 py-24 max-w-7xl">
