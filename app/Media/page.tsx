@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import MediaClient from "./media-client";
 import { Media } from "@/types/media";
 
-// Função de busca com cache
+// Cache-enabled fetch function
 const getMediaData = async () => {
   const supabase = createServerComponentClient({ cookies });
 
@@ -33,9 +33,9 @@ const getMediaData = async () => {
   return { medias, games, allTags };
 };
 
-// Desabilitar a renderização estática para esta página
+// Disable static rendering for this page
 export const dynamic = "force-dynamic";
-export const revalidate = 3600; // Revalidar a cada hora (3600 segundos)
+export const revalidate = 3600; // Revalidate every hour (3600 seconds)
 
 export default async function MediaPage() {
   const { medias, games, allTags } = await getMediaData();

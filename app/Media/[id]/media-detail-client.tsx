@@ -20,7 +20,7 @@ import {
 import Image from "next/image";
 import { MediaDetailSkeleton } from "@/components/media/media-detail-skeleton";
 
-// Componentes carregados sob demanda com lazy loading
+// Components loaded on demand with lazy loading
 const MediaDescription = lazy(
   () => import("@/components/media/media-description")
 );
@@ -120,10 +120,10 @@ export default function MediaDetailClient({ media }: MediaDetailClientProps) {
             <div className="mb-4">
               <Box className="h-12 w-12 text-primary/50" />
             </div>
-            <h3 className="text-xl font-medium mb-2">Modelo 3D</h3>
+            <h3 className="text-xl font-medium mb-2">3D Model</h3>
             <p className="text-center text-muted-foreground max-w-md">
-              Faça o download do arquivo para visualizar o modelo 3D completo em
-              seu software preferido
+              Download the file to view the complete 3D model in your preferred
+              software
             </p>
             <div className="mt-6 relative w-full max-w-md h-60 mx-auto">
               <Image

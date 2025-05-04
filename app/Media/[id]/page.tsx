@@ -4,11 +4,11 @@ import { Media } from "@/types/media";
 import { notFound } from "next/navigation";
 import MediaDetailClient from "./media-detail-client";
 
-// Função para buscar os detalhes da mídia
+// Function to fetch media details
 const getMediaDetails = async (id: string) => {
   const supabase = createServerComponentClient({ cookies });
 
-  // Otimização: buscar apenas os campos necessários
+  // Optimization: fetch only necessary fields
   const { data, error } = await supabase
     .from("medias")
     .select(
@@ -31,7 +31,7 @@ const getMediaDetails = async (id: string) => {
     visualizacoes: data.visualizacoes || 0,
   } as Media;
 
-  // Atualizar contador de visualizações de forma atômica no servidor
+  // Update view count atomically on the server
   await supabase
     .from("medias")
     .update({ visualizacoes: (mediaItem.visualizacoes || 0) + 1 })
@@ -40,9 +40,9 @@ const getMediaDetails = async (id: string) => {
   return mediaItem;
 };
 
-// Desabilitar a renderização estática para esta página
+// Disable static rendering for this page
 export const dynamic = "force-dynamic";
-export const revalidate = 3600; // Revalidar a cada hora (3600 segundos)
+export const revalidate = 3600; // Revalidate every hour (3600 seconds)
 
 export default async function MediaDetailPage({
   params,

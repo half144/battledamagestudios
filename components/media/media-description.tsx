@@ -10,7 +10,7 @@ export default function MediaDescription({
   return (
     <Card className="mt-6">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Descrição</CardTitle>
+        <CardTitle className="text-lg">Description</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="whitespace-pre-wrap">

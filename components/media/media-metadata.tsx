@@ -26,14 +26,14 @@ export default function MediaMetadata({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Informações do Arquivo</CardTitle>
+        <CardTitle className="text-lg">File Information</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <div className="flex gap-3">
             <CalendarIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
             <div>
-              <p className="font-medium mb-1">Data de Upload</p>
+              <p className="font-medium mb-1">Upload Date</p>
               <p className="text-sm text-muted-foreground">
                 {new Date(media.data_criacao).toLocaleString()}
               </p>
@@ -43,7 +43,7 @@ export default function MediaMetadata({
           <div className="flex gap-3">
             <EyeIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
             <div>
-              <p className="font-medium mb-1">Visualizações</p>
+              <p className="font-medium mb-1">Views</p>
               <p className="text-sm text-muted-foreground">
                 {media.visualizacoes}
               </p>
@@ -54,7 +54,7 @@ export default function MediaMetadata({
             <div className="flex gap-3">
               <FileIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
-                <p className="font-medium mb-1">Formato</p>
+                <p className="font-medium mb-1">Format</p>
                 <p className="text-sm text-muted-foreground">{media.formato}</p>
               </div>
             </div>
@@ -64,7 +64,7 @@ export default function MediaMetadata({
             <div className="flex gap-3">
               <FileIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
-                <p className="font-medium mb-1">Tamanho</p>
+                <p className="font-medium mb-1">Size</p>
                 <p className="text-sm text-muted-foreground">
                   {formatFileSize(media.tamanho_arquivo)}
                 </p>
@@ -76,7 +76,7 @@ export default function MediaMetadata({
             <div className="flex gap-3">
               <ClockIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
-                <p className="font-medium mb-1">Duração</p>
+                <p className="font-medium mb-1">Duration</p>
                 <p className="text-sm text-muted-foreground">
                   {formatDuration(media.duracao)}
                 </p>
