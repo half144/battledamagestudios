@@ -2,6 +2,7 @@ import { Media } from "@/types/media";
 import { MagicCard } from "@/components/ui/magic-card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -93,11 +94,20 @@ export function MediaCard({ media, index = 0 }: MediaCardProps) {
 
         {/* Thumbnail */}
         <div className="relative h-48 w-full overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center transform transition-all duration-500 group-hover:scale-110"
-            style={{ backgroundImage: `url(${media.thumbnail_url})` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+          <div className="absolute inset-0 z-10">
+            <Image
+              src={media.thumbnail_url || "/placeholder-image.jpg"}
+              alt={media.titulo}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+              className="object-cover transform transition-all duration-500 group-hover:scale-110"
+              quality={60}
+              placeholder="blur"
+              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+              priority={index < 4}
+            />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-20" />
         </div>
 
         {/* Content */}
