@@ -45,9 +45,10 @@ export const revalidate = 3600; // Revalidar a cada hora (3600 segundos)
 export default async function MediaDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = params;
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
   const media = await getMediaDetails(id);
 
   if (!media) {
