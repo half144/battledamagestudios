@@ -1,105 +1,95 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 import { BlogPost } from "@/lib/supabase";
-import { BlogHeader } from "@/components/blog/blog-header";
-import { BlogSearch } from "@/components/blog/blog-search";
-import { BlogCard } from "@/components/blog/blog-card";
-import { fetchPosts } from "@/lib/posts";
-import { useAuth } from "@/hooks/useAuth";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import UpdatesPageClient from "./updates-page-client";
 
-export default function BlogsPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [blogs, setBlogs] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { isAdmin } = useAuth();
+// Função para buscar os posts no servidor
+async function getPosts(): Promise<BlogPost[]> {
+  const supabase = createServerComponentClient({ cookies });
 
-  useEffect(() => {
-    const loadPosts = async () => {
-      setLoading(true);
-      try {
-        const posts = await fetchPosts();
-        setBlogs(posts);
-      } catch (error) {
-        console.error("Error loading posts:", error);
-      } finally {
-        setLoading(false);
+  try {
+    console.log("Fetching posts from Supabase (server)...");
+
+    // Buscar posts
+    const { data: posts, error } = await supabase
+      .from("posts")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching posts:", error);
+      console.error("Error details:", JSON.stringify(error));
+      return [];
+    }
+
+    if (!posts || posts.length === 0) {
+      console.log("No posts found in the database");
+      return [];
+    }
+
+    // Coletar todos os IDs de autores para buscar perfis
+    const authorIds = posts.map((post) => post.author_id).filter(Boolean);
+
+    // Buscar perfis de autores
+    let profilesMap: Record<string, any> = {};
+    if (authorIds.length > 0) {
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, username, role")
+        .in("id", authorIds);
+
+      if (profilesError) {
+        console.error("Error fetching author profiles:", profilesError);
+      } else if (profilesData) {
+        // Converter array de perfis para objeto mapeado por ID
+        profilesMap = profilesData.reduce((acc, profile) => {
+          acc[profile.id] = profile;
+          return acc;
+        }, {} as Record<string, any>);
       }
-    };
+    }
 
-    loadPosts();
-  }, []);
+    // Converter para o formato BlogPost
+    const blogPosts = posts.map((post) => {
+      const author = profilesMap[post.author_id];
 
-  const filteredBlogs = blogs.filter(
-    (blog) =>
-      blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      blog.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      const wordCount = post.content.split(/\s+/).length;
+      const readTime = Math.max(1, Math.ceil(wordCount / 200));
 
-  return (
-    <div className="container mx-auto px-4 py-24">
-      <motion.div
-        className="space-y-12"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        {/* Header centralizado */}
-        <div className="text-center">
-          <BlogHeader
-            title="Mixers Updates"
-            description="Stay updated with the latest news, development insights, and community stories"
-          />
-          
-          {/* Botão New Post centralizado e apenas para admin */}
-          {isAdmin && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-              className="mt-6"
-            >
-              <Button asChild className="flex items-center gap-2 bg-red-500 hover:bg-red-600">
-                <Link href="/Updates/editor">
-                  <PlusCircle className="w-5 h-5" />
-                  New Post
-                </Link>
-              </Button>
-            </motion.div>
-          )}
-        </div>
+      return {
+        id: post.id,
+        title: post.title,
+        description: post.description || "",
+        content: post.content,
+        image: post.image_url,
+        date: new Date(post.created_at).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        readTime: `${readTime} min read`,
+        author: author
+          ? {
+              name: author.username,
+              avatar: "/default-avatar.png",
+            }
+          : undefined,
+      };
+    });
 
-        <BlogSearch
-          searchQuery={searchQuery}
-          onSearchChange={(value) => setSearchQuery(value)}
-        />
+    return blogPosts;
+  } catch (err) {
+    console.error("Unexpected error fetching posts:", err);
+    return [];
+  }
+}
 
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-500"></div>
-            <p className="mt-2 text-gray-500">Loading posts...</p>
-          </div>
-        ) : (
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            {filteredBlogs.length > 0 ? (
-              filteredBlogs.map((blog, index) => (
-                <BlogCard key={blog.id} blog={blog} index={index} />
-              ))
-            ) : (
-              <div className="col-span-3 text-center py-12">
-                <p className="text-xl text-gray-500">No posts found</p>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </motion.div>
-    </div>
-  );
+// Desativar renderização estática para esta página
+export const dynamic = "force-dynamic";
+export const revalidate = 3600; // Revalidar a cada hora (3600 segundos)
+
+export default async function UpdatesPage() {
+  const blogs = await getPosts();
+
+  return <UpdatesPageClient blogs={blogs} />;
 }

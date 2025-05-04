@@ -10,10 +10,17 @@ type SupabaseContext = {
 
 const Context = createContext<SupabaseContext | undefined>(undefined);
 
-export function SupabaseProvider({ children }: { children: React.ReactNode }) {
-  const [supabase] = useState(() => createClientComponentClient());
+// Cliente Supabase para importação dinâmica
+export const supabase = createClientComponentClient();
 
-  return <Context.Provider value={{ supabase }}>{children}</Context.Provider>;
+export function SupabaseProvider({ children }: { children: React.ReactNode }) {
+  const [supabaseClient] = useState(() => supabase);
+
+  return (
+    <Context.Provider value={{ supabase: supabaseClient }}>
+      {children}
+    </Context.Provider>
+  );
 }
 
 export const useSupabase = () => {
