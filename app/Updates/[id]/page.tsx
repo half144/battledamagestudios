@@ -13,8 +13,13 @@ interface PageParams {
   id: string;
 }
 
-export default async function PostPage({ params }: { params: PageParams }) {
-  const post = await fetchPostById(params.id);
+export default async function PostPage({
+  params,
+}: {
+  params: Promise<PageParams>;
+}) {
+  const resolvedParams = await params;
+  const post = await fetchPostById(resolvedParams.id);
 
   if (!post) {
     notFound();

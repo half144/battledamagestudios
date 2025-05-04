@@ -100,8 +100,9 @@ export const dynamic = "force-dynamic";
 export default async function EditorPage({
   searchParams,
 }: {
-  searchParams: { edit?: string };
+  searchParams: Promise<{ edit?: string }>;
 }) {
+  const resolvedSearchParams = await searchParams;
   const isAdmin = await checkUserPermission();
 
   // Redirecionar se não for admin
@@ -109,7 +110,7 @@ export default async function EditorPage({
     redirect("/Updates");
   }
 
-  const editId = searchParams.edit || null;
+  const editId = resolvedSearchParams.edit || null;
   const postToEdit = editId ? await getPostForEdit(editId) : null;
 
   return <EditorPageClient editId={editId} initialData={postToEdit} />;

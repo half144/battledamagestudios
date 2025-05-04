@@ -44,10 +44,14 @@ const getMediaDetails = async (id: string) => {
 export const dynamic = "force-dynamic";
 export const revalidate = 3600; // Revalidate every hour (3600 seconds)
 
+interface PageParams {
+  id: string;
+}
+
 export default async function MediaDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<PageParams>;
 }) {
   const resolvedParams = await params;
   const { id } = resolvedParams;

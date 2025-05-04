@@ -7,21 +7,15 @@ import Image from "next/image";
 import { useCartStore } from "@/store/cart";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { storeItems } from "@/data/store";
-import { use } from "react";
 
-export default function ProductDetails({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function ProductDetails() {
   const router = useRouter();
   const addToCart = useCartStore((state) => state.addItem);
-  const resolvedParams = use(params);
-  const item = storeItems.find(
-    (item) => item.id === parseInt(resolvedParams.id)
-  );
+  const params = useParams();
+  const id = params.id as string;
+  const item = storeItems.find((item) => item.id === parseInt(id));
 
   if (!item) {
     return (
