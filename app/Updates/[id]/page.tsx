@@ -9,7 +9,11 @@ import { fetchPostById } from "@/lib/posts";
 export const dynamic = "force-dynamic";
 export const revalidate = 3600; // Revalidar a cada hora (3600 segundos)
 
-export default async function PostPage({ params }: { params: { id: string } }) {
+interface PageParams {
+  id: string;
+}
+
+export default async function PostPage({ params }: { params: PageParams }) {
   const post = await fetchPostById(params.id);
 
   if (!post) {
