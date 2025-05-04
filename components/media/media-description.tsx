@@ -1,4 +1,4 @@
-import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface MediaDescriptionProps {
   description: string;
@@ -8,9 +8,19 @@ export default function MediaDescription({
   description,
 }: MediaDescriptionProps) {
   return (
-    <div className="p-6 rounded-xl bg-card border border-border">
-      <h2 className="text-xl font-semibold mb-3">Description</h2>
-      <p className="text-muted-foreground">{description}</p>
-    </div>
+    <Card className="mt-6">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">Descrição</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="whitespace-pre-wrap">
+          {description.split("\n").map((paragraph, index) => (
+            <p key={index} className={index > 0 ? "mt-4" : ""}>
+              {paragraph}
+            </p>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

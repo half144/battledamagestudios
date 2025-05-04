@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Media } from "@/types/media";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface MediaMetadataProps {
   media: Media;
@@ -23,124 +24,99 @@ export default function MediaMetadata({
   formatDuration,
 }: MediaMetadataProps) {
   return (
-    <div className="p-6 rounded-xl bg-card border border-border">
-      <h2 className="text-xl font-semibold mb-4">Media Information</h2>
-
-      <div className="space-y-4">
-        {/* File size */}
-        {media.tamanho_arquivo && (
-          <div className="flex items-start gap-3">
-            <FileIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">Informações do Arquivo</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex gap-3">
+            <CalendarIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
             <div>
-              <h3 className="font-medium">File Size</h3>
+              <p className="font-medium mb-1">Data de Upload</p>
               <p className="text-sm text-muted-foreground">
-                {formatFileSize(media.tamanho_arquivo)}
+                {new Date(media.data_criacao).toLocaleString()}
               </p>
             </div>
           </div>
-        )}
 
-        {/* Duration (for music and video) */}
-        {media.duracao && (
-          <div className="flex items-start gap-3">
-            <ClockIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+          <div className="flex gap-3">
+            <EyeIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
             <div>
-              <h3 className="font-medium">Duration</h3>
+              <p className="font-medium mb-1">Visualizações</p>
               <p className="text-sm text-muted-foreground">
-                {formatDuration(media.duracao)}
+                {media.visualizacoes}
               </p>
             </div>
           </div>
-        )}
 
-        {/* Format */}
-        {media.formato && (
-          <div className="flex items-start gap-3">
-            <FileIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div>
-              <h3 className="font-medium">Format</h3>
-              <p className="text-sm text-muted-foreground">
-                {media.formato.toUpperCase()}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Date */}
-        <div className="flex items-start gap-3">
-          <CalendarIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
-          <div>
-            <h3 className="font-medium">Date Added</h3>
-            <p className="text-sm text-muted-foreground">
-              {new Date(media.data_criacao).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </p>
-          </div>
-        </div>
-
-        {/* Views */}
-        <div className="flex items-start gap-3">
-          <EyeIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
-          <div>
-            <h3 className="font-medium">Views</h3>
-            <p className="text-sm text-muted-foreground">
-              {media.visualizacoes.toLocaleString()}
-            </p>
-          </div>
-        </div>
-
-        {/* Tags */}
-        {media.tags && media.tags.length > 0 && (
-          <div className="flex items-start gap-3">
-            <TagIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div>
-              <h3 className="font-medium">Tags</h3>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {media.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary">
-                    {tag}
-                  </Badge>
-                ))}
+          {media.formato && (
+            <div className="flex gap-3">
+              <FileIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div>
+                <p className="font-medium mb-1">Formato</p>
+                <p className="text-sm text-muted-foreground">{media.formato}</p>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
 
-      {/* Download button */}
-      <Button className="w-full mt-6 flex items-center gap-2" asChild>
-        <a
-          href={media.arquivo_principal_url}
-          download
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <DownloadIcon className="h-4 w-4" />
-          Download {media.tipo_media === "stl" ? "3D Model" : media.tipo_media}
-        </a>
-      </Button>
+          {media.tamanho_arquivo !== undefined && (
+            <div className="flex gap-3">
+              <FileIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div>
+                <p className="font-medium mb-1">Tamanho</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatFileSize(media.tamanho_arquivo)}
+                </p>
+              </div>
+            </div>
+          )}
 
-      {/* Secondary file download if available */}
-      {media.arquivo_secundario_url && (
-        <Button
-          variant="outline"
-          className="w-full mt-3 flex items-center gap-2"
-          asChild
-        >
+          {media.duracao !== undefined && (
+            <div className="flex gap-3">
+              <ClockIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div>
+                <p className="font-medium mb-1">Duração</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatDuration(media.duracao)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {media.tags && media.tags.length > 0 && (
+            <div className="flex gap-3">
+              <TagIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div>
+                <p className="font-medium mb-1">Tags</p>
+                <div className="flex flex-wrap gap-1">
+                  {media.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="text-xs bg-muted px-2 py-1 rounded-md"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <Button className="w-full mt-6" asChild>
           <a
-            href={media.arquivo_secundario_url}
+            href={media.arquivo_principal_url}
             download
             target="_blank"
             rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2"
           >
             <DownloadIcon className="h-4 w-4" />
-            Download Additional Files
+            Download
           </a>
         </Button>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
