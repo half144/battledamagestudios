@@ -33,6 +33,8 @@ const getMediaData = async () => {
   return { medias, games, allTags };
 };
 
+// Desabilitar a renderização estática para esta página
+export const dynamic = "force-dynamic";
 export const revalidate = 3600; // Revalidar a cada hora (3600 segundos)
 
 export default async function MediaPage() {
