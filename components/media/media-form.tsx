@@ -96,36 +96,57 @@ export function MediaForm({ mode, existingMedia, onComplete }: MediaFormProps) {
 
   // Upload file to Supabase Storage
   const uploadFile = async (file: File, path: string): Promise<string> => {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${uuidv4()}.${fileExt}`;
-    const filePath = `${path}/${fileName}`;
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `${path}/${fileName}`;
 
-    const { error } = await supabase.storage
-      .from("media")
-      .upload(filePath, file, {
-        cacheControl: "3600",
-        upsert: true,
+      console.log(`Iniciando upload para ${filePath}...`, {
+        tamanhoArquivo: file.size,
+        tipoArquivo: file.type,
       });
 
-    if (error) throw error;
+      // Modificando os parâmetros do upload para resolver problemas intermitentes
+      const { error } = await supabase.storage
+        .from("media")
+        .upload(filePath, file, {
+          // Removendo cacheControl que pode estar causando problemas
+          // Removendo upsert que pode causar conflitos
+        });
 
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("media").getPublicUrl(filePath);
-    return publicUrl;
+      if (error) {
+        console.error("Erro no upload:", error);
+        throw error;
+      }
+
+      console.log("Upload completado com sucesso");
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("media").getPublicUrl(filePath);
+
+      console.log("URL pública obtida:", publicUrl);
+      return publicUrl;
+    } catch (error) {
+      console.error("Exceção durante o upload:", error);
+      throw error;
+    }
   };
 
   // Form submission handler
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setLoading(true);
+      console.log("Iniciando processo de envio do formulário...");
 
       // Generate ID for new media or use existing
       const mediaId = existingMedia?.id || uuidv4();
+      console.log("ID da mídia:", mediaId);
 
       // Upload files if they're not strings (URLs from existing media)
       let thumbnailUrl = values.thumbnail;
       if (values.thumbnail instanceof FileList && values.thumbnail.length > 0) {
+        console.log("Uploading thumbnail...");
         thumbnailUrl = await uploadFile(
           values.thumbnail[0],
           `thumbnails/${mediaId}`
@@ -137,6 +158,7 @@ export function MediaForm({ mode, existingMedia, onComplete }: MediaFormProps) {
         values.arquivo_principal instanceof FileList &&
         values.arquivo_principal.length > 0
       ) {
+        console.log("Uploading arquivo principal...");
         arquivoPrincipalUrl = await uploadFile(
           values.arquivo_principal[0],
           `${values.tipo_media}/${mediaId}`
@@ -148,6 +170,7 @@ export function MediaForm({ mode, existingMedia, onComplete }: MediaFormProps) {
         values.arquivo_secundario instanceof FileList &&
         values.arquivo_secundario.length > 0
       ) {
+        console.log("Uploading arquivo secundario...");
         arquivoSecundarioUrl = await uploadFile(
           values.arquivo_secundario[0],
           `secundarios/${mediaId}`
@@ -172,6 +195,8 @@ export function MediaForm({ mode, existingMedia, onComplete }: MediaFormProps) {
         tags: tagsArray,
       };
 
+      console.log("Dados para inserção/atualização:", mediaData);
+
       // Additional data for new media
       if (mode === "create") {
         Object.assign(mediaData, {
@@ -188,18 +213,68 @@ export function MediaForm({ mode, existingMedia, onComplete }: MediaFormProps) {
         });
       }
 
-      // Create or update in database
+      // Create or update in database com retry simplificado
       let error;
-      if (mode === "create") {
-        ({ error } = await supabase.from("medias").insert(mediaData));
-      } else {
-        ({ error } = await supabase
-          .from("medias")
-          .update(mediaData)
-          .eq("id", mediaId));
+      let retryCount = 0;
+      const maxRetries = 2; // Tentar até 3 vezes (original + 2 retries)
+
+      while (retryCount <= maxRetries) {
+        try {
+          if (mode === "create") {
+            console.log(
+              `Tentativa ${retryCount + 1} de inserção no banco de dados...`
+            );
+            ({ error } = await supabase.from("medias").insert(mediaData));
+          } else {
+            console.log(
+              `Tentativa ${retryCount + 1} de atualização no banco de dados...`
+            );
+            ({ error } = await supabase
+              .from("medias")
+              .update(mediaData)
+              .eq("id", mediaId));
+          }
+
+          // Se não tiver erro, sai do loop
+          if (!error) break;
+
+          // Se tiver erro, tenta novamente
+          console.error(`Erro na tentativa ${retryCount + 1}:`, error);
+          retryCount++;
+
+          // Espera um pouco antes de tentar novamente (backoff exponencial)
+          if (retryCount <= maxRetries) {
+            const waitTime = 1000 * Math.pow(2, retryCount); // 2s, 4s
+            console.log(
+              `Aguardando ${waitTime / 1000}s antes de tentar novamente...`
+            );
+            await new Promise((resolve) => setTimeout(resolve, waitTime));
+          }
+        } catch (innerError) {
+          console.error(`Exceção na tentativa ${retryCount + 1}:`, innerError);
+          retryCount++;
+
+          if (retryCount <= maxRetries) {
+            const waitTime = 1000 * Math.pow(2, retryCount);
+            console.log(
+              `Aguardando ${waitTime / 1000}s antes de tentar novamente...`
+            );
+            await new Promise((resolve) => setTimeout(resolve, waitTime));
+          } else {
+            throw innerError; // Se acabaram as tentativas, propaga o erro
+          }
+        }
       }
 
-      if (error) throw error;
+      if (error) {
+        console.error(
+          "Erro na operação do banco de dados após todas as tentativas:",
+          error
+        );
+        throw error;
+      }
+
+      console.log("Operação concluída com sucesso!");
 
       // Show success message
       toast.success(
