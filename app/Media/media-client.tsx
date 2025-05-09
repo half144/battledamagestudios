@@ -222,7 +222,7 @@ export default function MediaClient({
                   className="flex items-center gap-1"
                 >
                   <PlusCircle className="h-4 w-4" />
-                  <span>Nova Mídia</span>
+                  <span>New Media</span>
                 </Button>
               </>
             )}
