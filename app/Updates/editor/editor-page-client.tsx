@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useSupabase } from "@/components/providers/supabase-provider";
+import { createPost, updatePost } from "@/lib/posts";
 
 interface EditorPageClientProps {
   editId: string | null;
@@ -107,17 +108,12 @@ export default function EditorPageClient({
 
       if (editId) {
         // Atualizar post existente
-        const { error } = await supabase
-          .from("posts")
-          .update(postData)
-          .eq("id", editId);
-
-        if (error) throw error;
+        const res = await updatePost(editId, postData);
       } else {
         // Criar novo post
-        const { error } = await supabase.from("posts").insert([postData]);
+        const res = await createPost(postData);
 
-        if (error) throw error;
+        console.log(res);
       }
 
       // Redirecionar para a página de blogs

@@ -1,24 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-/**
- * IMPORTANT: This direct Supabase client should only be used in:
- * - Server components
- * - API routes
- * - Server actions
- *
- * For client components, use the useSupabase hook instead:
- *
- * import { useSupabase } from "@/components/providers/supabase-provider";
- *
- * function YourComponent() {
- *   const { supabase } = useSupabase();
- *   // Use supabase client here
- * }
- */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClientComponentClient();
 
 // Função de utilidade para buscar o perfil do usuário
 export async function getUserProfile(userId: string) {
@@ -44,7 +26,7 @@ export interface Post {
   image_url: string;
   created_at: string;
   author_id: string;
-  description?: string; // Adicionando para compatibilidade com a interface BlogPost
+  description?: string;
 }
 
 export interface Profile {
