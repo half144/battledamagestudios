@@ -1,69 +1,59 @@
-// hooks/useAuth.tsx
 import { useEffect, useState } from "react";
-import { Profile } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
-import { useSupabase } from "@/components/providers/supabase-provider";
+import { getUserProfileApi } from "@/lib/authApi";
 import { useProfileStore } from "@/store/profile";
 
 export function useAuth() {
-  const [user, setUser] = useState<any>(null);
-  const { profile } = useProfileStore();
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  const { supabase } = useSupabase();
+  const { profile, setProfile, setLoading, clearProfile } = useProfileStore();
+  const [loading, setLocalLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar a sessão atual
-    const checkSession = async () => {
+    const checkAuth = async () => {
       setLoading(true);
+      setLocalLoading(true);
 
       try {
-        const { data: sessionData, error } = await supabase.auth.getSession();
+        // Buscar o perfil do usuário usando a API REST
+        // Esta função já verifica a autenticação internamente
+        const userProfile = await getUserProfileApi();
 
-        console.log("useAuth", { sessionData });
-
-        if (error) {
-          console.error("Error getting session:", error);
-          setUser(null);
-
-          setLoading(false);
-          return;
-        }
-      } catch (err) {
-        console.error("Unexpected error:", err);
-        setUser(null);
-      }
-
-      setLoading(false);
-    };
-
-    // Verificar a sessão atual
-    checkSession();
-
-    // Configurar listener para mudanças na autenticação
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session) {
-          setUser(session.user);
+        if (userProfile) {
+          // Atualizar o perfil no store
+          setProfile(userProfile);
         } else {
-          setUser(null);
+          // Falha ao buscar perfil, limpar estado
+          clearProfile();
         }
-
-        setLoading(false);
+      } catch (error) {
+        console.error("Erro ao verificar autenticação:", error);
+        clearProfile();
+      } finally {
+        setLocalLoading(false);
       }
-    );
-
-    // Cleanup
-    return () => {
-      authListener?.subscription.unsubscribe();
     };
-  }, [router]);
 
-  // Definindo isAdmin: só é true se tiver um profile com role 'admin'
+    // Verificar autenticação ao montar o componente
+    checkAuth();
+
+    // Configurar um evento de verificação periódica (a cada 5 minutos)
+    // ou quando a página voltar a ficar ativa
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        checkAuth();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    const interval = setInterval(checkAuth, 5 * 60 * 1000);
+
+    // Limpar listeners
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearInterval(interval);
+    };
+  }, [setProfile, setLoading, clearProfile]);
+
+  // Definindo isAdmin: só é true se tiver um perfil com role 'admin'
   const isAdmin = profile?.role === "admin";
 
-  console.log("Auth state:", { user, profile, isAdmin, loading });
-
-  return { user, profile, isAdmin, loading };
+  return { profile, isAdmin, loading };
 }

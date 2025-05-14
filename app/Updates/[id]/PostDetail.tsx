@@ -5,7 +5,7 @@ import { ArrowLeft, Calendar, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { MagicCard } from "@/components/ui/magic-card";
-import type { BlogPost } from "@/lib/supabase";
+import type { BlogPost } from "@/types/blog";
 import { useAuth } from "@/hooks/useAuth";
 
 interface PostDetailProps {

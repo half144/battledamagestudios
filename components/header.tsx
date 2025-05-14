@@ -1,13 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Sparkles, Menu, X, User, LogOut } from "lucide-react";
+import { Sparkles, Menu, X, User, LogOut, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Cart } from "@/components/cart";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { useSupabase } from "@/components/providers/supabase-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,102 +14,65 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useProfileStore } from "@/store/profile";
+import { signOutApi, syncSessionApi } from "@/lib/authApi";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
+import { useToast } from "@/hooks/use-toast";
 
 // Adicionando tipos
-type UserType = {
-  id: string;
-  email?: string;
-} | null;
-
 type ProfileType = {
   username: string;
 };
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<UserType>(null);
-  const {
-    profile,
-    isLoading,
-    isAuthenticated,
-    setProfile,
-    setLoading,
-    clearProfile,
-  } = useProfileStore();
-  const { supabase } = useSupabase();
-
-  useEffect(() => {
-    // Verificar o estado de autenticação atual
-    const checkAuth = async () => {
-      setLoading(true);
-
-      try {
-        // Obter a sessão atual
-        const { data } = await supabase.auth.getSession();
-
-        if (data.session) {
-          console.log("data.session", data.session);
-          setUser(data.session.user);
-
-          // Buscar o perfil do usuário
-          const { data: profileData } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", data.session.user.id)
-            .single();
-
-          console.log("profileData", profileData);
-
-          if (profileData) {
-            setProfile(profileData);
-          }
-        } else {
-          setUser(null);
-          clearProfile();
-        }
-      } catch (error) {
-        console.error("Auth error:", error);
-        setUser(null);
-        clearProfile();
-      }
-    };
-
-    // Verificar autenticação na montagem do componente
-    checkAuth();
-
-    // Configurar listener para mudanças de autenticação
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "SIGNED_IN" && session) {
-          setUser(session.user);
-
-          // Buscar o perfil do usuário
-          const { data: profileData } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
-
-          if (profileData) {
-            setProfile(profileData);
-          }
-        } else if (event === "SIGNED_OUT") {
-          setUser(null);
-          clearProfile();
-        }
-      }
-    );
-
-    // Limpar listener na desmontagem
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [supabase, setProfile, setLoading, clearProfile]);
+  const [syncingSession, setSyncingSession] = useState(false);
+  const { profile, isLoading, isAuthenticated, checkAuth } = useAuthStatus();
+  const { toast } = useToast();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    // Fazer logout usando a API REST
+    const success = await signOutApi();
+
+    // Verificar autenticação novamente para atualizar o estado
+    checkAuth();
+
+    // Redirecionar para a home
     window.location.href = "/";
+  };
+
+  // Função para sincronizar a sessão manualmente
+  const handleSyncSession = async () => {
+    setSyncingSession(true);
+    try {
+      const result = await syncSessionApi();
+
+      if (result.success) {
+        toast({
+          title: "Sessão sincronizada",
+          description: "Sua sessão foi sincronizada com sucesso.",
+          variant: "default",
+        });
+
+        // Recarregar a autenticação
+        await checkAuth();
+      } else {
+        toast({
+          title: "Falha ao sincronizar",
+          description:
+            result.error || "Ocorreu um erro ao sincronizar sua sessão.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao sincronizar sessão:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro inesperado. Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    } finally {
+      setSyncingSession(false);
+    }
   };
 
   return (
@@ -192,6 +154,18 @@ export function Header() {
                       <User className="mr-2 h-4 w-4" />
                       <span>My Profile</span>
                     </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleSyncSession}
+                    disabled={syncingSession}
+                    className="cursor-pointer flex items-center"
+                  >
+                    <RefreshCw
+                      className={`mr-2 h-4 w-4 ${
+                        syncingSession ? "animate-spin" : ""
+                      }`}
+                    />
+                    <span>Sincronizar Sessão</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={handleSignOut}

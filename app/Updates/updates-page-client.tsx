@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { BlogPost } from "@/lib/supabase";
+import { BlogPost } from "@/types/blog";
 import { BlogHeader } from "@/components/blog/blog-header";
 import { BlogSearch } from "@/components/blog/blog-search";
 import { BlogCard } from "@/components/blog/blog-card";

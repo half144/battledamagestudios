@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useProfileStore } from "@/store/profile";
 import { PageHeader } from "@/components/page-header";
-import { MediaForm } from "@/components/media/media-form";
+import { MediaFormApi } from "@/components/media/media-form-api";
 import { toast } from "sonner";
 
 export default function CreateMediaPage() {
@@ -30,7 +30,7 @@ export default function CreateMediaPage() {
       />
 
       <div className="max-w-3xl mx-auto mt-8 p-6 bg-card rounded-lg shadow-md">
-        <MediaForm mode="create" />
+        <MediaFormApi mode="create" />
       </div>
     </div>
   );

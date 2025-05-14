@@ -6,15 +6,16 @@ import { Editor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEditor } from "@tiptap/react";
 import { useState, useEffect } from "react";
-import { BlogPost, convertBlogPostToPost } from "@/lib/supabase";
+import { BlogPost } from "@/types/blog";
 import { EditorHeader } from "@/components/blog/editor-header";
 import { EditorControls } from "@/components/blog/editor-controls";
 import { EditorActions } from "@/components/blog/editor-actions";
 import { motion } from "framer-motion";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { useRouter } from "next/navigation";
-import { useSupabase } from "@/components/providers/supabase-provider";
-import { createPost, updatePost } from "@/lib/posts";
+import { createPostApi, updatePostApi } from "@/lib/postsApi";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface EditorPageClientProps {
   editId: string | null;
@@ -25,12 +26,11 @@ export default function EditorPageClient({
   editId,
   initialData,
 }: EditorPageClientProps) {
-  const { profile } = useAuth();
+  const { profile } = useAuthStatus();
   const router = useRouter();
-  const { supabase } = useSupabase();
 
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<BlogPost>({
+  const [formData, setFormData] = useState<BlogPost & { error?: string }>({
     id: initialData?.id || "",
     title: initialData?.title || "",
     description: initialData?.description || "",
@@ -98,7 +98,7 @@ export default function EditorPageClient({
         readTime: `${readTime} min read`,
       };
 
-      // Dados para enviar ao Supabase
+      // Dados para enviar à API REST
       const postData = {
         title: updatedPost.title,
         content: updatedPost.content,
@@ -106,20 +106,37 @@ export default function EditorPageClient({
         author_id: profile.id,
       };
 
+      let success = false;
+      let errorMessage = "";
+
       if (editId) {
-        // Atualizar post existente
-        const res = await updatePost(editId, postData);
+        // Atualizar post existente usando a API REST
+        success = await updatePostApi(editId, postData);
+        if (!success) {
+          errorMessage = "Falha ao atualizar o post";
+        }
       } else {
-        // Criar novo post
-        const res = await createPost(postData);
-
-        console.log(res);
+        // Criar novo post usando a API REST
+        const newPostId = await createPostApi(postData);
+        if (newPostId) {
+          success = true;
+          console.log("Post criado com ID:", newPostId);
+        } else {
+          errorMessage = "Falha ao criar novo post";
+        }
       }
-
-      // Redirecionar para a página de blogs
-      router.push("/Updates");
     } catch (error) {
       console.error("Error saving post:", error);
+      // Aqui você poderia adicionar um estado para exibir o erro na interface
+      setFormData((prev) => ({
+        ...prev,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Erro desconhecido ao salvar o post",
+      }));
+    } finally {
+      window.location.href = "/Updates";
       setLoading(false);
     }
   };
@@ -135,6 +152,14 @@ export default function EditorPageClient({
           backLink="/Updates"
           title={editId ? "Edit Blog Post" : "New Blog Post"}
         />
+
+        {formData.error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Erro</AlertTitle>
+            <AlertDescription>{formData.error}</AlertDescription>
+          </Alert>
+        )}
 
         {loading ? (
           <div className="text-center py-12">

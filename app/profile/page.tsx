@@ -5,8 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Package, CreditCard, MapPin, Bell } from "lucide-react";
+import { Package, CreditCard, MapPin, Bell, RefreshCw } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { syncSessionApi } from "@/lib/authApi";
+import { useToast } from "@/hooks/use-toast";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -24,6 +28,45 @@ const staggerContainer = {
 };
 
 export default function ProfilePage() {
+  const [syncingSession, setSyncingSession] = useState(false);
+  const { toast } = useToast();
+  const { checkAuth } = useAuthStatus();
+
+  // Função para sincronizar a sessão manualmente
+  const handleSyncSession = async () => {
+    setSyncingSession(true);
+    try {
+      const result = await syncSessionApi();
+
+      if (result.success) {
+        toast({
+          title: "Sessão sincronizada",
+          description: "Sua sessão foi sincronizada com sucesso.",
+          variant: "default",
+        });
+
+        // Recarregar a autenticação
+        await checkAuth();
+      } else {
+        toast({
+          title: "Falha ao sincronizar",
+          description:
+            result.error || "Ocorreu um erro ao sincronizar sua sessão.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao sincronizar sessão:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro inesperado. Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    } finally {
+      setSyncingSession(false);
+    }
+  };
+
   return (
     <motion.div
       className="space-y-8"
@@ -45,9 +88,22 @@ export default function ProfilePage() {
             Manage your account settings and view your orders
           </p>
         </div>
-        <Button variant="outline" size="icon">
-          <Bell className="h-4 w-4" />
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleSyncSession}
+            disabled={syncingSession}
+            title="Sincronizar sessão"
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${syncingSession ? "animate-spin" : ""}`}
+            />
+          </Button>
+          <Button variant="outline" size="icon">
+            <Bell className="h-4 w-4" />
+          </Button>
+        </div>
       </motion.div>
 
       {/* Profile Quick Actions */}
@@ -95,9 +151,7 @@ export default function ProfilePage() {
           variants={fadeIn}
           whileHover={{ scale: 1.02 }}
           transition={{ type: "spring", stiffness: 300 }}
-        >
-       
-        </motion.div>
+        ></motion.div>
       </motion.div>
 
       {/* Profile Details */}

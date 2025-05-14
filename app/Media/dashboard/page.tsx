@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useSupabase } from "@/components/providers/supabase-provider";
 import { useProfileStore } from "@/store/profile";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -11,10 +10,10 @@ import { MediaFilters } from "./components/MediaFilters";
 import { PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Media } from "@/types/media";
+import { fetchMediasApi, deleteMediaApi } from "@/lib/mediaApi";
 
 export default function MediaDashboard() {
   const router = useRouter();
-  const { supabase } = useSupabase();
   const { profile } = useProfileStore();
   const [allMedias, setAllMedias] = useState<Media[]>([]);
   const [filteredMedias, setFilteredMedias] = useState<Media[]>([]);
@@ -42,15 +41,14 @@ export default function MediaDashboard() {
         setLoading(true);
         setError(null);
 
-        const { data, error } = await supabase
-          .from("medias")
-          .select("*")
-          .order("data_criacao", { ascending: false });
+        const data = await fetchMediasApi();
 
-        if (error) throw error;
+        if (!data) {
+          throw new Error("Failed to fetch media data");
+        }
 
-        setAllMedias(data as Media[]);
-        setFilteredMedias(data as Media[]);
+        setAllMedias(data);
+        setFilteredMedias(data);
       } catch (error) {
         console.error("Error loading media:", error);
         setError("Error loading media: " + (error as Error).message);
@@ -60,7 +58,7 @@ export default function MediaDashboard() {
     };
 
     fetchMedias();
-  }, [supabase]);
+  }, []);
 
   // Apply in-memory filters when filters change
   useEffect(() => {
@@ -104,9 +102,11 @@ export default function MediaDashboard() {
     if (!confirm("Do you want to delete this media item?")) return;
 
     try {
-      const { error } = await supabase.from("medias").delete().eq("id", id);
+      const success = await deleteMediaApi(id);
 
-      if (error) throw error;
+      if (!success) {
+        throw new Error("Failed to delete media");
+      }
 
       setAllMedias((prev) => prev.filter((media) => media.id !== id));
       toast.success("Media deleted successfully");

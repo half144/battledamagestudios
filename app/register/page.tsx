@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSupabase } from "@/components/providers/supabase-provider";
+import { signUpWithEmailApi } from "@/lib/authApi";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 
 export default function RegisterPage() {
-  const { supabase } = useSupabase();
   const router = useRouter();
   const [formData, setFormData] = useState({
     username: "",
@@ -26,7 +25,6 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [username, setUsername] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -39,39 +37,28 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     if (formData.password !== formData.confirmPassword) {
-      setErrorMessage("Passwords do not match.");
+      setErrorMessage("As senhas não correspondem.");
       setIsLoading(false);
       return;
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            username: formData.username,
-          },
-        },
-      });
+      const { success, error } = await signUpWithEmailApi(
+        formData.email,
+        formData.password,
+        formData.username
+      );
 
-      if (error) throw error;
-
-      if (data.user) {
-        await supabase.from("profiles").insert([
-          {
-            id: data.user.id,
-            username: formData.username,
-          },
-        ]);
-
-        setSuccessMessage("Account created successfully! Redirecting...");
-        setTimeout(() => {
-          router.push("/profile");
-        }, 2000);
+      if (!success) {
+        throw new Error(error || "Erro no registro");
       }
+
+      setSuccessMessage("Conta criada com sucesso! Redirecionando...");
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
     } catch (error: any) {
-      setErrorMessage(error.message || "Registration failed.");
+      setErrorMessage(error.message || "Falha no registro.");
     } finally {
       setIsLoading(false);
     }
@@ -81,17 +68,17 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-[400px]">
         <CardHeader>
-          <CardTitle>Register</CardTitle>
-          <CardDescription>Create a new account to get started</CardDescription>
+          <CardTitle>Registrar</CardTitle>
+          <CardDescription>Crie uma nova conta para começar</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Username</label>
+              <label className="text-sm font-medium">Nome de Usuário</label>
               <Input
                 type="text"
                 name="username"
-                placeholder="Enter your username"
+                placeholder="Digite seu nome de usuário"
                 className="w-full"
                 value={formData.username}
                 onChange={handleInputChange}
@@ -103,7 +90,7 @@ export default function RegisterPage() {
               <Input
                 type="email"
                 name="email"
-                placeholder="Enter your email"
+                placeholder="Digite seu email"
                 className="w-full"
                 value={formData.email}
                 onChange={handleInputChange}
@@ -111,11 +98,11 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Password</label>
+              <label className="text-sm font-medium">Senha</label>
               <Input
                 type="password"
                 name="password"
-                placeholder="Enter your password"
+                placeholder="Digite sua senha"
                 className="w-full"
                 value={formData.password}
                 onChange={handleInputChange}
@@ -123,11 +110,11 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Confirm Password</label>
+              <label className="text-sm font-medium">Confirmar Senha</label>
               <Input
                 type="password"
                 name="confirmPassword"
-                placeholder="Confirm your password"
+                placeholder="Confirme sua senha"
                 className="w-full"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
@@ -143,14 +130,14 @@ export default function RegisterPage() {
             )}
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Create Account"}
+              {isLoading ? "Criando conta..." : "Criar Conta"}
             </Button>
           </form>
           <div className="mt-4 text-center">
             <p className="text-sm">
-              Already have an account?{" "}
+              Já tem uma conta?{" "}
               <Link href="/login" className="hover:underline">
-                Login
+                Entrar
               </Link>
             </p>
           </div>

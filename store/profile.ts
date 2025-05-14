@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 export interface ProfileData {
   id: string;
@@ -46,6 +46,11 @@ export const useProfileStore = create<ProfileStore>()(
     }),
     {
       name: "profile-storage",
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) => ({
+        profile: state.profile,
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
   )
 );

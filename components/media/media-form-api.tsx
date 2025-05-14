@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
-import { useSupabase } from "@/components/providers/supabase-provider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +25,10 @@ import * as z from "zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Media } from "@/types/media";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
+import { createMediaApi, updateMediaApi } from "@/lib/mediaApi";
+import { SUPABASE_URL } from "@/lib/supabaseApi";
+import fetchClient from "@/lib/fetchClient";
 
 // Types for accepted files
 const ACCEPTED_IMAGE_TYPES = [
@@ -66,15 +69,19 @@ const formSchema = z.object({
   tags: z.string().optional(),
 });
 
-interface MediaFormProps {
+interface MediaFormApiProps {
   mode: "create" | "edit";
   existingMedia?: Media;
   onComplete?: () => void;
 }
 
-export function MediaForm({ mode, existingMedia, onComplete }: MediaFormProps) {
+export function MediaFormApi({
+  mode,
+  existingMedia,
+  onComplete,
+}: MediaFormApiProps) {
   const router = useRouter();
-  const { supabase } = useSupabase();
+  const { profile } = useAuthStatus();
   const [loading, setLoading] = useState(false);
 
   // Initialize form
@@ -94,7 +101,7 @@ export function MediaForm({ mode, existingMedia, onComplete }: MediaFormProps) {
     },
   });
 
-  // Upload file to Supabase Storage
+  // Upload file to Supabase Storage using API REST
   const uploadFile = async (file: File, path: string): Promise<string> => {
     try {
       const fileExt = file.name.split(".").pop();
@@ -106,26 +113,15 @@ export function MediaForm({ mode, existingMedia, onComplete }: MediaFormProps) {
         tipoArquivo: file.type,
       });
 
-      // Modificando os parâmetros do upload para resolver problemas intermitentes
-      const { error } = await supabase.storage
-        .from("media")
-        .upload(filePath, file, {
-          // Removendo cacheControl que pode estar causando problemas
-          // Removendo upsert que pode causar conflitos
-        });
-
-      if (error) {
-        console.error("Erro no upload:", error);
-        throw error;
-      }
+      // Usar o fetchClient para fazer o upload
+      await fetchClient.upload(`/storage/v1/object/media/${filePath}`, file);
 
       console.log("Upload completado com sucesso");
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("media").getPublicUrl(filePath);
+      // Obter URL pública do arquivo
+      const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/media/${filePath}`;
 
-      console.log("URL pública obtida:", publicUrl);
+      console.log("URL pública:", publicUrl);
       return publicUrl;
     } catch (error) {
       console.error("Exceção durante o upload:", error);
@@ -138,6 +134,11 @@ export function MediaForm({ mode, existingMedia, onComplete }: MediaFormProps) {
     try {
       setLoading(true);
       console.log("Iniciando processo de envio do formulário...");
+
+      // Verificar se o usuário está autenticado
+      if (!profile) {
+        throw new Error("Usuário não autenticado");
+      }
 
       // Generate ID for new media or use existing
       const mediaId = existingMedia?.id || uuidv4();
@@ -183,63 +184,49 @@ export function MediaForm({ mode, existingMedia, onComplete }: MediaFormProps) {
         : [];
 
       // Prepare data for database
-      const mediaData = {
-        id: mediaId,
+      const mediaData: Omit<Media, "id" | "data_criacao" | "visualizacoes"> = {
         titulo: values.titulo,
         descricao: values.descricao,
         tipo_media: values.tipo_media,
         categoria: values.categoria,
-        thumbnail_url: thumbnailUrl,
-        arquivo_principal_url: arquivoPrincipalUrl,
-        arquivo_secundario_url: arquivoSecundarioUrl || null,
+        thumbnail_url: thumbnailUrl as string,
+        arquivo_principal_url: arquivoPrincipalUrl as string,
+        arquivo_secundario_url: arquivoSecundarioUrl
+          ? (arquivoSecundarioUrl as string)
+          : undefined,
         tags: tagsArray,
+        tamanho_arquivo:
+          values.arquivo_principal instanceof FileList
+            ? values.arquivo_principal[0].size
+            : existingMedia?.tamanho_arquivo || 0,
+        formato:
+          values.arquivo_principal instanceof FileList
+            ? values.arquivo_principal[0].name.split(".").pop() || ""
+            : existingMedia?.formato || "",
       };
 
       console.log("Dados para inserção/atualização:", mediaData);
 
-      // Additional data for new media
-      if (mode === "create") {
-        Object.assign(mediaData, {
-          tamanho_arquivo:
-            values.arquivo_principal instanceof FileList
-              ? values.arquivo_principal[0].size
-              : existingMedia?.tamanho_arquivo || 0,
-          formato:
-            values.arquivo_principal instanceof FileList
-              ? values.arquivo_principal[0].name.split(".").pop() || ""
-              : existingMedia?.formato || "",
-          data_criacao: new Date().toISOString(),
-          visualizacoes: 0,
-        });
-      }
-
-      // Create or update in database com retry simplificado
-      let error;
+      // Create or update media using REST API
+      let success = false;
       let retryCount = 0;
       const maxRetries = 2; // Tentar até 3 vezes (original + 2 retries)
 
-      while (retryCount <= maxRetries) {
+      while (retryCount <= maxRetries && !success) {
         try {
           if (mode === "create") {
-            console.log(
-              `Tentativa ${retryCount + 1} de inserção no banco de dados...`
-            );
-            ({ error } = await supabase.from("medias").insert(mediaData));
-          } else {
-            console.log(
-              `Tentativa ${retryCount + 1} de atualização no banco de dados...`
-            );
-            ({ error } = await supabase
-              .from("medias")
-              .update(mediaData)
-              .eq("id", mediaId));
+            console.log(`Tentativa ${retryCount + 1} de criação na API...`);
+            const newId = await createMediaApi(mediaData);
+            success = !!newId;
+          } else if (existingMedia) {
+            console.log(`Tentativa ${retryCount + 1} de atualização na API...`);
+            success = await updateMediaApi(existingMedia.id, mediaData);
           }
 
-          // Se não tiver erro, sai do loop
-          if (!error) break;
+          // Se tiver sucesso, sai do loop
+          if (success) break;
 
-          // Se tiver erro, tenta novamente
-          console.error(`Erro na tentativa ${retryCount + 1}:`, error);
+          // Se falhar, tenta novamente
           retryCount++;
 
           // Espera um pouco antes de tentar novamente (backoff exponencial)
@@ -250,28 +237,21 @@ export function MediaForm({ mode, existingMedia, onComplete }: MediaFormProps) {
             );
             await new Promise((resolve) => setTimeout(resolve, waitTime));
           }
-        } catch (innerError) {
-          console.error(`Exceção na tentativa ${retryCount + 1}:`, innerError);
+        } catch (error) {
+          console.error(`Erro na tentativa ${retryCount + 1}:`, error);
           retryCount++;
 
           if (retryCount <= maxRetries) {
             const waitTime = 1000 * Math.pow(2, retryCount);
-            console.log(
-              `Aguardando ${waitTime / 1000}s antes de tentar novamente...`
-            );
             await new Promise((resolve) => setTimeout(resolve, waitTime));
           } else {
-            throw innerError; // Se acabaram as tentativas, propaga o erro
+            throw error; // Se acabaram as tentativas, propaga o erro
           }
         }
       }
 
-      if (error) {
-        console.error(
-          "Erro na operação do banco de dados após todas as tentativas:",
-          error
-        );
-        throw error;
+      if (!success) {
+        throw new Error("Falha em todas as tentativas de salvar a mídia");
       }
 
       console.log("Operação concluída com sucesso!");
@@ -509,27 +489,29 @@ export function MediaForm({ mode, existingMedia, onComplete }: MediaFormProps) {
           name="tags"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tags (comma separated)</FormLabel>
+              <FormLabel>Tags (Comma separated)</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: character, game, art" {...field} />
+                <Input placeholder="tag1, tag2, tag3" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <Button type="submit" disabled={loading} className="w-full">
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {mode === "create" ? "Uploading..." : "Updating..."}
-            </>
-          ) : mode === "create" ? (
-            "Create Media"
-          ) : (
-            "Update Media"
-          )}
-        </Button>
+        <div className="flex justify-end space-x-4 pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/Media/dashboard")}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {mode === "create" ? "Create Media" : "Update Media"}
+          </Button>
+        </div>
       </form>
     </Form>
   );

@@ -1,23 +1,4 @@
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-
-export const supabase = createClientComponentClient();
-
-// Função de utilidade para buscar o perfil do usuário
-export async function getUserProfile(userId: string) {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("username, id")
-    .eq("id", userId)
-    .single();
-
-  if (error) {
-    console.error("Error fetching user profile:", error);
-    return null;
-  }
-
-  return data;
-}
-
+// types/blog.ts
 // Tipo para post
 export interface Post {
   id: string;
@@ -27,12 +8,6 @@ export interface Post {
   created_at: string;
   author_id: string;
   description?: string;
-}
-
-export interface Profile {
-  id: string;
-  username: string;
-  role: "admin" | "user";
 }
 
 export interface BlogPost {
@@ -49,7 +24,10 @@ export interface BlogPost {
   };
 }
 
-export function convertPostToBlogPost(post: Post, author?: Profile): BlogPost {
+export function convertPostToBlogPost(
+  post: Post,
+  author?: { username: string; id: string; role?: string }
+): BlogPost {
   const wordCount = post.content.split(/\s+/).length;
   const readTime = Math.max(1, Math.ceil(wordCount / 200));
 

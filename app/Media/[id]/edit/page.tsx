@@ -2,17 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSupabase } from "@/components/providers/supabase-provider";
 import { useProfileStore } from "@/store/profile";
 import { PageHeader } from "@/components/page-header";
-import { MediaForm } from "@/components/media/media-form";
+import { MediaFormApi } from "@/components/media/media-form-api";
 import { Media } from "@/types/media";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
+import { fetchMediaByIdApi } from "@/lib/mediaApi";
 
 export default function EditMediaPage() {
   const router = useRouter();
-  const { supabase } = useSupabase();
   const { profile } = useProfileStore();
   const [media, setMedia] = useState<Media | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,15 +23,13 @@ export default function EditMediaPage() {
     const fetchMedia = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
-          .from("medias")
-          .select("*")
-          .eq("id", id)
-          .single();
+        const data = await fetchMediaByIdApi(id);
 
-        if (error) throw error;
+        if (!data) {
+          throw new Error("Media not found");
+        }
 
-        setMedia(data as Media);
+        setMedia(data);
       } catch (error) {
         console.error("Error fetching media:", error);
         toast.error("Could not load media data");
@@ -43,7 +40,7 @@ export default function EditMediaPage() {
     };
 
     fetchMedia();
-  }, [id, supabase, router]);
+  }, [id, router]);
 
   // Check if user is logged in and admin
   if (!profile) {
@@ -94,7 +91,7 @@ export default function EditMediaPage() {
       <PageHeader heading="Edit Media" text={`Editing: ${media.titulo}`} />
 
       <div className="max-w-3xl mx-auto mt-8 p-6 bg-card rounded-lg shadow-md">
-        <MediaForm
+        <MediaFormApi
           mode="edit"
           existingMedia={media}
           onComplete={() => router.push("/Media/dashboard")}

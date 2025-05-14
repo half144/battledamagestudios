@@ -1,9 +1,8 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
-import { BlogPost } from "@/lib/supabase";
+import { BlogPost } from "@/types/blog";
 import { notFound } from "next/navigation";
 import PostDetail from "./PostDetail";
-import { fetchPostById } from "@/lib/posts";
+import { fetchPostByIdApi } from "@/lib/postsApi";
 
 // Desativar renderização estática para esta página
 export const dynamic = "force-dynamic";
@@ -19,7 +18,7 @@ export default async function PostPage({
   params: Promise<PageParams>;
 }) {
   const resolvedParams = await params;
-  const post = await fetchPostById(resolvedParams.id);
+  const post = await fetchPostByIdApi(resolvedParams.id);
 
   if (!post) {
     notFound();

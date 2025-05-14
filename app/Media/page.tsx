@@ -1,36 +1,27 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import MediaClient from "./media-client";
 import { Media } from "@/types/media";
+import { fetchMediasApi } from "@/lib/mediaApi";
 
 // Cache-enabled fetch function
 const getMediaData = async () => {
-  const supabase = createServerComponentClient({ cookies });
+  try {
+    // Buscar mídias usando a API REST
+    const medias = await fetchMediasApi();
 
-  // Fetch medias from Supabase
-  const { data, error } = await supabase.from("medias").select("*");
+    // Extrair jogos únicos (do campo categoria)
+    const games = Array.from(new Set(medias.map((item) => item.categoria)));
 
-  if (error) {
+    // Extrair todas as tags únicas
+    const allTags = Array.from(
+      new Set(medias.flatMap((item) => item.tags || []))
+    );
+
+    return { medias, games, allTags };
+  } catch (error) {
     console.error("Error fetching media:", error);
     throw new Error("Failed to load media data");
   }
-
-  // Convert data to match Media interface
-  const medias = data?.map((item) => ({
-    ...item,
-    // Ensure data_criacao is a string
-    data_criacao: item.data_criacao || new Date().toISOString(),
-    // Initialize visualizacoes if not present
-    visualizacoes: item.visualizacoes || 0,
-  })) as Media[];
-
-  // Extract unique games (from categoria field)
-  const games = Array.from(new Set(data.map((item) => item.categoria)));
-
-  // Extract all unique tags
-  const allTags = Array.from(new Set(data.flatMap((item) => item.tags || [])));
-
-  return { medias, games, allTags };
 };
 
 // Disable static rendering for this page

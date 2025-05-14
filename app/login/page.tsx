@@ -11,11 +11,18 @@ import {
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useSupabase } from "@/components/providers/supabase-provider";
+import { useState, useEffect } from "react";
+import { signInWithEmailApi } from "@/lib/authApi";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const router = useRouter();
+  const {
+    isAuthenticated,
+    isLoading: authLoading,
+    checkAuth,
+  } = useAuthStatus();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -23,7 +30,13 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
-  const { supabase } = useSupabase();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      router.push("/profile");
+    }
+  }, [isAuthenticated, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,21 +47,22 @@ export default function LoginPage() {
     const { email, password } = formData;
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { success, error } = await signInWithEmailApi(email, password);
 
-      if (error) {
-        setError(error.message);
+      if (!success) {
+        setError(error || "Login failed");
       } else {
         setSuccess("Login successful! Redirecting...");
+
+        await checkAuth();
+
         setTimeout(() => {
-          router.push("/profile"); // Redireciona para a página de perfil
-        }, 1500);
+          router.push("/profile");
+        }, 1000);
       }
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      console.error("Login error:", err);
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -58,6 +72,41 @@ export default function LoginPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-[400px]">
+          <CardHeader>
+            <CardTitle>Checking...</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-center">
+              <div className="animate-spin h-8 w-8 border-4 border-red-500 rounded-full border-t-transparent"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-[400px]">
+          <CardHeader>
+            <CardTitle>Already authenticated</CardTitle>
+            <CardDescription>Redirecting to your profile...</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" onClick={() => router.push("/profile")}>
+              Go to profile
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -97,10 +146,11 @@ export default function LoginPage() {
             {error && <p className="text-red-500 text-sm">{error}</p>}
             {success && <p className="text-green-500 text-sm">{success}</p>}
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign in"}
+              {isLoading ? "Logging in..." : "Login"}
             </Button>
+
             <p className="text-center text-sm mt-2">
-              Don&apos;t have an account?{" "}
+              Don't have an account?{" "}
               <Link href="/register" className="hover:underline">
                 Register
               </Link>
