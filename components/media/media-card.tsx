@@ -14,6 +14,7 @@ import {
   EyeIcon,
   TagIcon,
   ArrowRightIcon,
+  YoutubeIcon,
 } from "lucide-react";
 
 interface MediaCardProps {
@@ -33,6 +34,8 @@ export function MediaCard({ media, index = 0 }: MediaCardProps) {
         return <Music2Icon className="h-4 w-4" />;
       case "stl":
         return <Box className="h-4 w-4" />;
+      case "youtube_embed":
+        return <YoutubeIcon className="h-4 w-4" />;
       default:
         return <ImageIcon className="h-4 w-4" />;
     }
@@ -49,6 +52,8 @@ export function MediaCard({ media, index = 0 }: MediaCardProps) {
         return { from: "rgb(139 92 246)", to: "rgb(124 58 237)" };
       case "stl":
         return { from: "rgb(16 185 129)", to: "rgb(5 150 105)" };
+      case "youtube_embed":
+        return { from: "rgb(255 0 0)", to: "rgb(180 0 0)" };
       default:
         return { from: "rgb(239 68 68)", to: "rgb(185 28 28)" };
     }

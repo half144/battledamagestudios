@@ -2,7 +2,7 @@ export interface Media {
   id: string;
   titulo: string;
   descricao?: string;
-  tipo_media: "imagem" | "video" | "musica" | "stl" | "outro";
+  tipo_media: "imagem" | "video" | "musica" | "stl" | "outro" | "youtube_embed";
   categoria: string;
   arquivo_principal_url: string;
   arquivo_secundario_url?: string;

@@ -40,41 +40,6 @@ export function Header() {
     window.location.href = "/";
   };
 
-  // Função para sincronizar a sessão manualmente
-  const handleSyncSession = async () => {
-    setSyncingSession(true);
-    try {
-      const result = await syncSessionApi();
-
-      if (result.success) {
-        toast({
-          title: "Sessão sincronizada",
-          description: "Sua sessão foi sincronizada com sucesso.",
-          variant: "default",
-        });
-
-        // Recarregar a autenticação
-        await checkAuth();
-      } else {
-        toast({
-          title: "Falha ao sincronizar",
-          description:
-            result.error || "Ocorreu um erro ao sincronizar sua sessão.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Erro ao sincronizar sessão:", error);
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro inesperado. Tente novamente mais tarde.",
-        variant: "destructive",
-      });
-    } finally {
-      setSyncingSession(false);
-    }
-  };
-
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-red-500/20">
       <div className="max-w-7xl mx-auto px-4">
@@ -154,18 +119,6 @@ export function Header() {
                       <User className="mr-2 h-4 w-4" />
                       <span>My Profile</span>
                     </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleSyncSession}
-                    disabled={syncingSession}
-                    className="cursor-pointer flex items-center"
-                  >
-                    <RefreshCw
-                      className={`mr-2 h-4 w-4 ${
-                        syncingSession ? "animate-spin" : ""
-                      }`}
-                    />
-                    <span>Sincronizar Sessão</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={handleSignOut}

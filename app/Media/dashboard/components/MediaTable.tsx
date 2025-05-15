@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileImage, FileVideo, Music, Box } from "lucide-react";
+import { FileImage, FileVideo, Music, Box, YoutubeIcon } from "lucide-react";
 import Image from "next/image";
 import { formatBytes } from "@/lib/utils";
 import { format } from "date-fns";
@@ -59,6 +59,8 @@ export function MediaTable({ medias, loading, onDelete }: MediaTableProps) {
       case "model":
       case "stl":
         return <Box className="h-3.5 w-3.5 mr-1" />;
+      case "youtube_embed":
+        return <YoutubeIcon className="h-3.5 w-3.5 mr-1" />;
       default:
         return null;
     }
@@ -292,6 +294,8 @@ function getBadgeVariant(
       return "outline";
     case "model":
     case "stl":
+      return "destructive";
+    case "youtube_embed":
       return "destructive";
     default:
       return "outline";

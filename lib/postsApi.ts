@@ -80,11 +80,13 @@ async function fetchAuthorsByIds(
 ): Promise<Record<string, AuthorProfileFromSupabase>> {
   if (authorIds.length === 0) return {};
   try {
-    // Exemplo: /rest/v1/profiles?id=in.(user_id_1,user_id_2)
-    // Certifique-se que seu Supabase está configurado para aceitar este tipo de query em "profiles"
-    const uniqueAuthorIds = [...new Set(authorIds)]; // Evitar IDs duplicados na query
+    const uniqueAuthorIds = [...new Set(authorIds)].filter((id) => id);
+    if (uniqueAuthorIds.length === 0) return {};
+
     const profiles = await fetchClient.get<AuthorProfileFromSupabase[]>(
-      `/rest/v1/profiles?id=in.(${uniqueAuthorIds.join(",")})`
+      `/rest/v1/profiles?id=in.(${uniqueAuthorIds.join(
+        ","
+      )})&select=id,username,role`
     );
     const profilesMap: Record<string, AuthorProfileFromSupabase> = {};
     profiles.forEach((profile) => {
@@ -100,31 +102,21 @@ async function fetchAuthorsByIds(
 // Buscar todos os posts usando o acesso direto
 export async function fetchPostsApi(): Promise<BlogPost[]> {
   try {
-    // Usando select para buscar posts e embutir dados do autor.
-    // A sintaxe correta para embutir é: foreign_table(columns_to_select)
-    // Se a FK em "posts" para "profiles" é "author_id":
-    const postsWithAuthorData = await fetchClient.get<PostWithInlinedAuthor[]>(
+    const postsRaw = await fetchClient.get<Post[]>(
       "/rest/v1/posts?select=*&order=created_at.desc"
     );
 
-    if (!postsWithAuthorData || postsWithAuthorData.length === 0) {
+    if (!postsRaw || postsRaw.length === 0) {
       console.log("Nenhum post encontrado no banco de dados.");
       return getSamplePosts();
     }
 
-    return postsWithAuthorData.map((post) => {
-      const authorProfile = post.author;
-      let authorArgForConverter:
-        | { id: string; username: string; role?: string }
-        | undefined = undefined;
-      if (authorProfile) {
-        authorArgForConverter = {
-          id: authorProfile.id,
-          username: authorProfile.username,
-          role: authorProfile.role,
-        };
-      }
-      return convertPostToBlogPost(post, authorArgForConverter);
+    const authorIds = postsRaw.map((post) => post.author_id).filter((id) => id);
+    const authorsMap = await fetchAuthorsByIds(authorIds);
+
+    return postsRaw.map((post) => {
+      const authorProfile = authorsMap[post.author_id];
+      return convertPostToBlogPost(post, authorProfile);
     });
   } catch (err) {
     console.error("Erro ao buscar posts:", err);
@@ -132,31 +124,29 @@ export async function fetchPostsApi(): Promise<BlogPost[]> {
   }
 }
 
-// Buscar post por ID - esse ainda é simples o suficiente para manter a abordagem original
+// Buscar post por ID
 export async function fetchPostByIdApi(
   postId: string
 ): Promise<BlogPost | null> {
   try {
-    const posts = await fetchClient.get<PostWithInlinedAuthor[]>(
+    // Busca o post específico. O tipo Post já tem author_id.
+    const postsRaw = await fetchClient.get<Post[]>(
       `/rest/v1/posts?id=eq.${postId}&select=*`
     );
-    if (!posts || posts.length === 0) {
+
+    if (!postsRaw || postsRaw.length === 0) {
       console.log(`Post com ID ${postId} não encontrado.`);
       return null;
     }
-    const post = posts[0];
-    const authorProfile = post.author;
-    let authorArgForConverter:
-      | { id: string; username: string; role?: string }
-      | undefined = undefined;
-    if (authorProfile) {
-      authorArgForConverter = {
-        id: authorProfile.id,
-        username: authorProfile.username,
-        role: authorProfile.role,
-      };
+    const post = postsRaw[0];
+
+    let authorProfile: AuthorProfileFromSupabase | undefined = undefined;
+    if (post.author_id) {
+      const authorsMap = await fetchAuthorsByIds([post.author_id]);
+      authorProfile = authorsMap[post.author_id];
     }
-    return convertPostToBlogPost(post, authorArgForConverter);
+
+    return convertPostToBlogPost(post, authorProfile);
   } catch (err) {
     console.error(`Erro ao buscar post ${postId}:`, err);
     return null;

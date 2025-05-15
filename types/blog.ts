@@ -26,7 +26,7 @@ export interface BlogPost {
 
 export function convertPostToBlogPost(
   post: Post,
-  author?: { username: string; id: string; role?: string }
+  author?: { username: string; id: string; avatar_url?: string; role?: string }
 ): BlogPost {
   const wordCount = post.content.split(/\s+/).length;
   const readTime = Math.max(1, Math.ceil(wordCount / 200));
@@ -46,7 +46,7 @@ export function convertPostToBlogPost(
     author: author
       ? {
           name: author.username,
-          avatar: "/default-avatar.png",
+          avatar: author.avatar_url || "/default-avatar.png",
         }
       : undefined,
   };

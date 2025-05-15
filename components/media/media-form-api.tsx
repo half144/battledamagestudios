@@ -29,23 +29,11 @@ import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { createMediaApi, updateMediaApi } from "@/lib/mediaApi";
 import { SUPABASE_URL } from "@/lib/supabaseApi";
 import fetchClient from "@/lib/fetchClient";
-
-// Types for accepted files
-const ACCEPTED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-];
-const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/ogg"];
-const ACCEPTED_AUDIO_TYPES = ["audio/mpeg", "audio/ogg", "audio/wav"];
-const ACCEPTED_MODEL_TYPES = ["model/stl", "application/octet-stream", ".stl"];
-
 // Form validation schema
 const formSchema = z.object({
   titulo: z.string().min(1, { message: "Title is required" }),
   descricao: z.string().min(1, { message: "Description is required" }),
-  tipo_media: z.enum(["imagem", "video", "musica", "stl"], {
+  tipo_media: z.enum(["imagem", "video", "musica", "stl", "youtube_embed"], {
     required_error: "Media type is required",
   }),
   categoria: z.string().min(1, { message: "Category is required" }),
@@ -91,8 +79,12 @@ export function MediaFormApi({
       titulo: existingMedia?.titulo || "",
       descricao: existingMedia?.descricao || "",
       tipo_media:
-        (existingMedia?.tipo_media as "imagem" | "video" | "musica" | "stl") ||
-        undefined,
+        (existingMedia?.tipo_media as
+          | "imagem"
+          | "video"
+          | "musica"
+          | "stl"
+          | "youtube_embed") || undefined,
       categoria: existingMedia?.categoria || "",
       thumbnail: existingMedia?.thumbnail_url || undefined,
       arquivo_principal: existingMedia?.arquivo_principal_url || undefined,
@@ -156,6 +148,7 @@ export function MediaFormApi({
 
       let arquivoPrincipalUrl = values.arquivo_principal;
       if (
+        values.tipo_media !== "youtube_embed" &&
         values.arquivo_principal instanceof FileList &&
         values.arquivo_principal.length > 0
       ) {
@@ -164,6 +157,8 @@ export function MediaFormApi({
           values.arquivo_principal[0],
           `${values.tipo_media}/${mediaId}`
         );
+      } else if (values.tipo_media === "youtube_embed") {
+        arquivoPrincipalUrl = values.arquivo_principal;
       }
 
       let arquivoSecundarioUrl = values.arquivo_secundario;
@@ -196,11 +191,15 @@ export function MediaFormApi({
           : undefined,
         tags: tagsArray,
         tamanho_arquivo:
-          values.arquivo_principal instanceof FileList
+          values.tipo_media === "youtube_embed"
+            ? 0
+            : values.arquivo_principal instanceof FileList
             ? values.arquivo_principal[0].size
             : existingMedia?.tamanho_arquivo || 0,
         formato:
-          values.arquivo_principal instanceof FileList
+          values.tipo_media === "youtube_embed"
+            ? "youtube"
+            : values.arquivo_principal instanceof FileList
             ? values.arquivo_principal[0].name.split(".").pop() || ""
             : existingMedia?.formato || "",
       };
@@ -298,6 +297,8 @@ export function MediaFormApi({
         return ".mp3,.ogg,.wav";
       case "stl":
         return ".stl";
+      case "youtube_embed":
+        return undefined;
       default:
         return undefined;
     }
@@ -359,6 +360,7 @@ export function MediaFormApi({
                     <SelectItem value="video">Video</SelectItem>
                     <SelectItem value="musica">Music</SelectItem>
                     <SelectItem value="stl">3D Model (STL)</SelectItem>
+                    <SelectItem value="youtube_embed">YouTube Embed</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -418,28 +420,49 @@ export function MediaFormApi({
             render={({ field: { onChange, value, ...rest } }) => (
               <FormItem>
                 <FormLabel>
-                  Main File {mode === "edit" && "(Upload to change)"}
+                  {watchTipoMedia === "youtube_embed"
+                    ? "YouTube Video URL"
+                    : "Main File"}
+                  {mode === "edit" &&
+                    watchTipoMedia !== "youtube_embed" &&
+                    " (Upload to change)"}
                 </FormLabel>
                 {mode === "edit" && typeof value === "string" && (
                   <div className="mb-2 text-sm text-muted-foreground">
-                    Current file:{" "}
+                    {watchTipoMedia === "youtube_embed"
+                      ? "Current URL: "
+                      : "Current file: "}
                     <a
                       href={value}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary hover:underline"
                     >
-                      View current file
+                      {watchTipoMedia === "youtube_embed"
+                        ? value
+                        : "View current file"}
                     </a>
                   </div>
                 )}
                 <FormControl>
-                  <Input
-                    type="file"
-                    accept={getAcceptedFileTypes()}
-                    onChange={(e) => onChange(e.target.files || e.target.value)}
-                    {...rest}
-                  />
+                  {watchTipoMedia === "youtube_embed" ? (
+                    <Input
+                      type="text"
+                      placeholder="Enter YouTube video URL"
+                      onChange={onChange}
+                      value={value || ""}
+                      {...rest}
+                    />
+                  ) : (
+                    <Input
+                      type="file"
+                      accept={getAcceptedFileTypes()}
+                      onChange={(e) =>
+                        onChange(e.target.files || e.target.value)
+                      }
+                      {...rest}
+                    />
+                  )}
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -447,7 +470,7 @@ export function MediaFormApi({
           />
         )}
 
-        {watchTipoMedia && (
+        {watchTipoMedia && watchTipoMedia !== "youtube_embed" && (
           <FormField
             control={form.control}
             name="arquivo_secundario"

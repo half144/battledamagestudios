@@ -16,9 +16,11 @@ import {
   TagIcon,
   CalendarIcon,
   DownloadIcon,
+  YoutubeIcon,
 } from "lucide-react";
 import Image from "next/image";
 import { MediaDetailSkeleton } from "@/components/media/media-detail-skeleton";
+import YouTube from "react-youtube";
 
 // Components loaded on demand with lazy loading
 const MediaDescription = lazy(
@@ -141,6 +143,62 @@ export default function MediaDetailClient({ media }: MediaDetailClientProps) {
           </div>
         );
 
+      case "youtube_embed":
+        const getYouTubeVideoId = (url: string): string | null => {
+          let videoId = null;
+          try {
+            const urlObj = new URL(url);
+            if (urlObj.hostname === "youtu.be") {
+              videoId = urlObj.pathname.slice(1);
+            } else if (
+              urlObj.hostname.includes("youtube.com") &&
+              urlObj.pathname === "/watch"
+            ) {
+              videoId = urlObj.searchParams.get("v");
+            } else if (
+              urlObj.hostname.includes("youtube.com") &&
+              urlObj.pathname.startsWith("/embed/")
+            ) {
+              videoId = urlObj.pathname.split("/embed/")[1];
+            }
+            // Remover quaisquer parâmetros adicionais do videoId, como playlist
+            if (videoId) {
+              videoId = videoId.split("?")[0].split("&")[0];
+            }
+          } catch (e) {
+            console.error("Invalid URL for YouTube video", e);
+            return null;
+          }
+          return videoId;
+        };
+
+        const videoId = getYouTubeVideoId(media.arquivo_principal_url);
+
+        if (!videoId) {
+          return (
+            <div className="relative w-full aspect-video bg-black flex items-center justify-center text-white">
+              Invalid or unsupported YouTube URL
+            </div>
+          );
+        }
+
+        const opts = {
+          height: "100%", // Ajustado para preencher o container
+          width: "100%", // Ajustado para preencher o container
+          playerVars: {
+            // https://developers.google.com/youtube/player_parameters
+            autoplay: 0,
+            modestbranding: 1, // Oculta o logo do YouTube o máximo possível
+            rel: 0, // Não mostrar vídeos relacionados ao final
+          },
+        };
+
+        return (
+          <div className="relative w-full aspect-video bg-black">
+            <YouTube videoId={videoId} opts={opts} className="w-full h-full" />
+          </div>
+        );
+
       default:
         return null;
     }
@@ -157,6 +215,8 @@ export default function MediaDetailClient({ media }: MediaDetailClientProps) {
         return <Music2Icon className="h-5 w-5" />;
       case "stl":
         return <Box className="h-5 w-5" />;
+      case "youtube_embed":
+        return <YoutubeIcon className="h-5 w-5" />;
       default:
         return null;
     }
