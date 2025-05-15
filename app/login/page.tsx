@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { signInWithEmailApi } from "@/lib/authApi";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
@@ -18,7 +18,6 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const {
     isAuthenticated,
     isLoading: authLoading,
@@ -32,13 +31,6 @@ export default function LoginPage() {
     password: "",
   });
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (isAuthenticated && !authLoading) {
-      const redirectUrl = searchParams.get("redirect");
-      router.push(redirectUrl || "/profile");
-    }
-  }, [isAuthenticated, authLoading, router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +47,11 @@ export default function LoginPage() {
         setError(error || "Login failed");
       } else {
         setSuccess("Login successful! Redirecting...");
+
+        toast({
+          title: "Login successful",
+          description: "Redirecting to your profile...",
+        });
 
         await checkAuth();
       }
