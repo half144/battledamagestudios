@@ -30,7 +30,6 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,12 +47,8 @@ export default function LoginPage() {
       } else {
         setSuccess("Login successful! Redirecting...");
 
-        toast({
-          title: "Login successful",
-          description: "Redirecting to your profile...",
-        });
-
         await checkAuth();
+        router.push("/");
       }
     } catch (err) {
       console.error("Login error:", err);
