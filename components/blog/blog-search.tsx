@@ -9,18 +9,23 @@ interface BlogSearchProps {
 
 export function BlogSearch({ searchQuery, onSearchChange }: BlogSearchProps) {
   return (
-    <motion.div
-      className="max-w-xl mx-auto w-full relative"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-    >
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-500 w-5 h-5" />
-      <Input
-        placeholder="Search articles..."
-        value={searchQuery}
-        onChange={(e) => onSearchChange(e.target.value)}
-        className="w-full pl-10 py-6 text-lg border-red-500/20"
+    <div className="relative">
+      <div className="flex items-center border-b border-zinc-700 focus-within:border-red-500 pb-1 transition-colors duration-200">
+        <Search className="text-zinc-400 w-5 h-5 flex-shrink-0" />
+        <Input
+          placeholder="Buscar artigos..."
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-3 py-2 text-base placeholder:text-zinc-500"
+        />
+      </div>
+
+      <motion.div
+        className="absolute bottom-0 left-0 h-[1px] bg-red-500"
+        initial={{ width: 0 }}
+        animate={{ width: searchQuery ? "100%" : 0 }}
+        transition={{ duration: 0.3 }}
       />
-    </motion.div>
+    </div>
   );
 }

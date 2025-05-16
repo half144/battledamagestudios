@@ -9,7 +9,7 @@ import { BlogCard } from "@/components/blog/blog-card";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Layout } from "lucide-react";
 
 interface UpdatesPageClientProps {
   blogs: BlogPost[];
@@ -26,49 +26,83 @@ export default function UpdatesPageClient({ blogs }: UpdatesPageClientProps) {
   );
 
   return (
-    <div className="container mx-auto px-4 py-24">
-      <motion.div
-        className="space-y-12"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        {/* Header centralizado */}
-        <div className="text-center">
-          <BlogHeader
-            title="Mixers Updates"
-            description="Stay updated with the latest news, development insights, and community stories"
-          />
+    <div className="w-full">
+      {/* Hero section com background escuro */}
+      <div className="bg-gradient-to-b from-black via-zinc-900 to-black border-b border-zinc-800">
+        <div className="container mx-auto px-4 py-16 md:py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-4xl mx-auto"
+          >
+            <BlogHeader
+              title="Mixers Updates"
+              description="Stay updated with the latest news, development insights, and community stories"
+            />
 
-          {/* Botão New Post centralizado e apenas para admin */}
-          {isAdmin && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-              className="mt-6"
-            >
-              <Button
-                asChild
-                className="flex items-center gap-2 bg-red-500 hover:bg-red-600"
+            {/* Admin actions */}
+            {isAdmin && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex justify-center gap-3 mt-8"
               >
-                <Link href="/Updates/editor">
-                  <PlusCircle className="w-5 h-5" />
-                  New Post
-                </Link>
-              </Button>
-            </motion.div>
-          )}
+                <Button
+                  asChild
+                  variant="default"
+                  className="bg-red-500 hover:bg-red-600 text-white"
+                >
+                  <Link
+                    href="/Updates/editor"
+                    className="flex items-center gap-2"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    New Post
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                >
+                  <Link
+                    href="/Updates/dashboard"
+                    className="flex items-center gap-2"
+                  >
+                    <Layout className="w-4 h-4" />
+                    Dashboard
+                  </Link>
+                </Button>
+              </motion.div>
+            )}
+          </motion.div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Search section em fundo contrastante */}
+        <div className="max-w-3xl mx-auto -mt-6 mb-12">
+          <motion.div
+            className="bg-zinc-900 rounded-xl p-4 shadow-lg border border-zinc-800"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <BlogSearch
+              searchQuery={searchQuery}
+              onSearchChange={(value) => setSearchQuery(value)}
+            />
+          </motion.div>
         </div>
 
-        <BlogSearch
-          searchQuery={searchQuery}
-          onSearchChange={(value) => setSearchQuery(value)}
-        />
-
+        {/* Blog posts grid */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
         >
           {filteredBlogs.length > 0 ? (
             filteredBlogs.map((blog, index) => (
@@ -80,7 +114,7 @@ export default function UpdatesPageClient({ blogs }: UpdatesPageClientProps) {
             </div>
           )}
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 }
