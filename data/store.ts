@@ -6,7 +6,7 @@ export type ItemCategory =
   | "ChatFishes";
 
 export interface StoreItem {
-  id: number;
+  id: string;
   name: string;
   price: number;
   image: string;
@@ -19,7 +19,7 @@ export interface StoreItem {
 
 export const storeItems: StoreItem[] = [
   {
-    id: 1,
+    id: "1",
     name: "Dragon Slayer Bundle",
     price: 29.99,
     image: "/3sis.png",
@@ -30,7 +30,7 @@ export const storeItems: StoreItem[] = [
     rating: 4.5,
   },
   {
-    id: 2,
+    id: "2",
     name: "1000 Battle Coins",
     price: 9.99,
     image: "/3sis.png",

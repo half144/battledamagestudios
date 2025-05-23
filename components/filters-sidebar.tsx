@@ -3,15 +3,15 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ItemCategory } from "@/data/store";
 
 type FiltersSidebarProps = {
-  selectedCategory: ItemCategory | "all";
-  setSelectedCategory: (value: ItemCategory | "all") => void;
+  selectedCategory: string | "all";
+  setSelectedCategory: (value: string | "all") => void;
   priceRange: "all" | "under10" | "10to25" | "over25";
   setPriceRange: (value: "all" | "under10" | "10to25" | "over25") => void;
   showFeaturedOnly: boolean;
   setShowFeaturedOnly: (value: boolean) => void;
+  categories?: string[];
 };
 
 export function FiltersSidebar({
@@ -21,6 +21,7 @@ export function FiltersSidebar({
   setPriceRange,
   showFeaturedOnly,
   setShowFeaturedOnly,
+  categories = [],
 }: FiltersSidebarProps) {
   return (
     <div className="space-y-6">
@@ -29,29 +30,21 @@ export function FiltersSidebar({
         <h3 className="mb-4 font-semibold">Category</h3>
         <RadioGroup
           value={selectedCategory}
-          onValueChange={(value) => setSelectedCategory(value as ItemCategory | "all")}
+          onValueChange={(value) =>
+            setSelectedCategory(value as string | "all")
+          }
         >
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="all" id="all" />
               <Label htmlFor="all">All</Label>
             </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="Bickering Bunch" id="Bickering Bunch" />
-              <Label htmlFor="Bickering Bunch">Bickering Bunch</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="Legends of Terrestria" id="Legends of Terrestria" />
-              <Label htmlFor="Legends of Terrestria">Legends of Terrestria</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="Terrestria At War" id="Terrestria At War" />
-              <Label htmlFor="equipment">Terrestria At War</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="ChatFishes" id="ChatFishes" />
-              <Label htmlFor="ChatFishes">ChatFishes</Label>
-            </div>
+            {categories.map((category) => (
+              <div key={category} className="flex items-center space-x-2">
+                <RadioGroupItem value={category} id={category} />
+                <Label htmlFor={category}>{category}</Label>
+              </div>
+            ))}
           </div>
         </RadioGroup>
       </div>
@@ -94,7 +87,7 @@ export function FiltersSidebar({
             checked={showFeaturedOnly}
             onCheckedChange={() => setShowFeaturedOnly(!showFeaturedOnly)}
           />
-          <Label htmlFor="featured">Show featured only</Label>
+          <Label htmlFor="featured">Show active only</Label>
         </div>
       </div>
     </div>
