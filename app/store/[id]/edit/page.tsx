@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useProfileStore } from "@/store/profile";
 import { PageHeader } from "@/components/page-header";
@@ -15,7 +15,16 @@ import { fetchProductByIdApi, updateProductApi } from "@/lib/storeApi";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
-export default function EditProduct({ params }: { params: { id: string } }) {
+interface PageParams {
+  id: string;
+}
+
+export default function EditProduct({
+  params,
+}: {
+  params: Promise<PageParams>;
+}) {
+  const resolvedParams = use(params);
   const router = useRouter();
   const { profile } = useProfileStore();
   const [loading, setLoading] = useState(true);
@@ -42,7 +51,7 @@ export default function EditProduct({ params }: { params: { id: string } }) {
         setLoading(true);
         setError(null);
 
-        const product = await fetchProductByIdApi(params.id);
+        const product = await fetchProductByIdApi(resolvedParams.id);
 
         if (!product) {
           throw new Error("Product not found");
@@ -60,7 +69,7 @@ export default function EditProduct({ params }: { params: { id: string } }) {
     };
 
     fetchProduct();
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   // Handle input change
   const handleChange = (
@@ -97,7 +106,7 @@ export default function EditProduct({ params }: { params: { id: string } }) {
         return;
       }
 
-      const success = await updateProductApi(params.id, formData);
+      const success = await updateProductApi(resolvedParams.id, formData);
 
       if (!success) {
         throw new Error("Failed to update product");
