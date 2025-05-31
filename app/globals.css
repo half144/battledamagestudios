@@ -81,3 +81,42 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Sonner Toast Customization */
+@layer components {
+  [data-sonner-toast][data-type="success"] {
+    @apply bg-red-500/10 border-red-500/20;
+  }
+
+  [data-sonner-toast][data-type="success"] [data-icon] {
+    @apply text-red-500;
+  }
+
+  [data-sonner-toast][data-type="error"] {
+    @apply bg-red-500/10 border-red-500/20;
+  }
+
+  [data-sonner-toast][data-type="error"] [data-icon] {
+    @apply text-red-500;
+  }
+
+  [data-sonner-toast][data-type="warning"] {
+    @apply bg-orange-500/10 border-orange-500/20;
+  }
+
+  [data-sonner-toast][data-type="warning"] [data-icon] {
+    @apply text-orange-500;
+  }
+
+  [data-sonner-toast][data-type="info"] {
+    @apply bg-blue-500/10 border-blue-500/20;
+  }
+
+  [data-sonner-toast][data-type="info"] [data-icon] {
+    @apply text-blue-500;
+  }
+
+  [data-sonner-toast] [data-close-button] {
+    @apply text-red-500 hover:text-red-600;
+  }
+}

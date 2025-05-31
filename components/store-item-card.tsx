@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { MagicCard } from "@/components/ui/magic-card";
 import { StoreItem } from "@/data/store";
 import { CartItem } from "@/store/cart";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type StoreItemCardProps = {
   item: StoreItem;
@@ -12,6 +15,28 @@ type StoreItemCardProps = {
 };
 
 export function StoreItemCard({ item, addToCart }: StoreItemCardProps) {
+  const { isAuthenticated } = useAuthStatus();
+  const router = useRouter();
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    if (!isAuthenticated) {
+      toast.error("You need to be logged in to add items to cart");
+      router.push("/login");
+      return;
+    }
+
+    addToCart({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+    });
+
+    toast.success(`${item.name} added to cart!`);
+  };
+
   return (
     <Link href={`/store/${item.id}`}>
       <MagicCard
@@ -43,15 +68,7 @@ export function StoreItemCard({ item, addToCart }: StoreItemCardProps) {
             <span className="font-bold">${item.price.toFixed(2)}</span>
             <Button
               className="bg-red-500 hover:bg-red-600"
-              onClick={(e) => {
-                e.preventDefault();
-                addToCart({
-                  id: item.id,
-                  name: item.name,
-                  price: item.price,
-                  image: item.image,
-                });
-              }}
+              onClick={handleAddToCart}
             >
               Add to Cart
             </Button>

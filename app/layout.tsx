@@ -3,8 +3,11 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { CartAuthProvider } from "@/components/providers/cart-auth-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { preloadStripeProducts } from "@/lib/stripe";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,6 +22,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  preloadStripeProducts();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
@@ -29,9 +34,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <Header />
-            <main>{children}</main>
-            <Footer />
+            <CartAuthProvider>
+              <Header />
+              <main>{children}</main>
+              <Footer />
+              <Toaster position="top-right" richColors closeButton />
+            </CartAuthProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
