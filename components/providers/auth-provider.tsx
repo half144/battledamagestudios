@@ -100,20 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log("[Auth Provider] No profile in storage, checking auth");
       checkAuth();
     }
-
-    // Verificar novamente quando a página voltar a ficar visível
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        console.log("[Auth Provider] Page became visible, checking auth");
-        checkAuth();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
   }, []); // Remover profile da dependência para evitar loops
 
   return (

@@ -56,17 +56,13 @@ export const useProfileStore = create<ProfileStore>()(
 
       refreshProfile: () => {
         console.log("[ProfileStore] Refreshing profile");
-        // Limpar o cache do sessionStorage e forçar reload
+        // Limpar o cache do sessionStorage
         sessionStorage.removeItem("profile-storage");
         set({
           profile: null,
           isAuthenticated: false,
           isLoading: true,
         });
-        // Trigger a re-fetch by reloading the page
-        if (typeof window !== "undefined") {
-          window.location.reload();
-        }
       },
     }),
     {
