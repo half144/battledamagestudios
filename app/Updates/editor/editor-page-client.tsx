@@ -71,8 +71,8 @@ export default function EditorPageClient({
       setFormData((prev) => ({
         ...prev,
         author: {
-          name: profile.username,
-          avatar: "/default-avatar.png",
+          name: profile.full_name || profile.username,
+          avatar: profile.avatar_url || "/default-avatar.png",
         },
       }));
     }

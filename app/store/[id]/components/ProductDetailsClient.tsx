@@ -146,7 +146,7 @@ export const ProductDetailsClient = ({
               {formatPrice(productPrice)}
             </span>
             <span className="text-sm text-muted-foreground">
-              {product.default_price.currency.toUpperCase()}
+              {product.default_price?.currency?.toUpperCase() || "USD"}
             </span>
           </div>
           <Button

@@ -6,13 +6,14 @@ import { ProductDetailsClient } from "./components/ProductDetailsClient";
 import { ProductDetailsLoading } from "./components/ProductDetailsLoading";
 
 interface ProductPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
-  const product = await getStripeProduct(params.id);
+  const { id } = await params;
+  const product = await getStripeProduct(id);
 
   if (!product) {
     return {
@@ -39,7 +40,8 @@ export async function generateMetadata({
 export const revalidate = 300;
 
 export default async function ProductDetails({ params }: ProductPageProps) {
-  const product = await getStripeProduct(params.id);
+  const { id } = await params;
+  const product = await getStripeProduct(id);
 
   if (!product) {
     notFound();

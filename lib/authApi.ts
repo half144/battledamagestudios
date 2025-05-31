@@ -28,6 +28,12 @@ export const getUserProfileApi = async (): Promise<ProfileData | null> => {
       email: data.user.email,
       username: data.user.username || data.user.email?.split("@")[0] || "user",
       role: data.user.role || "user",
+      avatar_url: data.user.avatar_url,
+      full_name: data.user.full_name,
+      created_at: data.user.created_at,
+      updated_at: data.user.updated_at,
+      total_spent: data.user.total_spent || 0,
+      member_since: data.user.member_since || data.user.created_at,
     };
   } catch (error) {
     console.error("Erro ao buscar perfil:", error);

@@ -19,7 +19,7 @@ import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { updateUserProfileApi } from "@/lib/authApi";
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Loader2 } from "lucide-react";
+import { User, Loader2, RefreshCw } from "lucide-react";
 import { useProfileStore } from "@/store/profile";
 
 const settingsFormSchema = z.object({

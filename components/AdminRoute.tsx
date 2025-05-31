@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { useRouter } from "next/navigation";
 import { useProfileStore } from "@/store/profile";
 
@@ -9,22 +9,25 @@ interface AdminRouteProps {
   children: ReactNode;
 }
 
-export function AdminRoute({ children }: AdminRouteProps) {
-  const { profile, isLoading } = useProfileStore();
+export default function AdminRoute({ children }: AdminRouteProps) {
+  const { profile, isAuthenticated, isLoading } = useAuthStatus();
   const router = useRouter();
 
   useEffect(() => {
-    console.log("isAdmin", profile);
-    if (!isLoading && profile?.role !== "admin") {
-      router.push("/Updates");
+    if (!isLoading) {
+      if (!isAuthenticated || profile?.role !== "admin") {
+        router.push("/");
+      }
     }
-  }, [profile, isLoading, router]);
-
-  console.log("isAdmin", profile);
+  }, [isAuthenticated, profile, isLoading, router]);
 
   if (isLoading) {
-    return <div className="container mx-auto px-4 py-24">Loading...</div>;
+    return <div>Loading...</div>;
   }
 
-  return profile?.role === "admin" ? <>{children}</> : null;
+  if (!isAuthenticated || profile?.role !== "admin") {
+    return null;
+  }
+
+  return <>{children}</>;
 }

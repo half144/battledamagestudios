@@ -30,6 +30,7 @@ interface AuthorProfileFromSupabase {
   username: string;
   avatar_url?: string;
   role?: string; // Adicionando role se vier do Supabase e for usado
+  full_name?: string;
 }
 
 // Modificando o tipo Post para refletir que a FK do autor (ex: author_id)
@@ -86,7 +87,7 @@ async function fetchAuthorsByIds(
     const profiles = await fetchClient.get<AuthorProfileFromSupabase[]>(
       `/rest/v1/profiles?id=in.(${uniqueAuthorIds.join(
         ","
-      )})&select=id,username,role`
+      )})&select=id,username,role,avatar_url,full_name`
     );
     const profilesMap: Record<string, AuthorProfileFromSupabase> = {};
     profiles.forEach((profile) => {
@@ -95,7 +96,7 @@ async function fetchAuthorsByIds(
     return profilesMap;
   } catch (error) {
     console.error("Erro ao buscar perfis de autores:", error);
-    return {}; // Retornar mapa vazio em caso de erro
+    return {};
   }
 }
 

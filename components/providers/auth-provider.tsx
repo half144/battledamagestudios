@@ -16,12 +16,17 @@ type AuthContextType = {
   checkAuth: () => Promise<void>;
 };
 
-// Criar o contexto com valores padrão
-const AuthContext = createContext<AuthContextType>({
-  isAuthenticated: false,
-  isLoading: true,
-  checkAuth: async () => {},
-});
+// Criar o contexto
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Hook para usar o contexto
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+}
 
 /**
  * Provider de autenticação simplificado que faz uma única requisição para o servidor
@@ -36,24 +41,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Função para verificar a autenticação com o servidor
    */
   const checkAuth = async (): Promise<void> => {
+    console.log("[Auth Provider] Checking authentication...");
     setIsLoading(true);
 
     try {
-      // Fazer uma única requisição para o endpoint de verificação
       const response = await fetch("/api/auth/check", {
-        cache: "no-store", // Sempre buscar dados frescos
-        headers: {
-          "Cache-Control": "no-cache",
-        },
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
       });
-      const data = await response.json();
 
-      console.log("[Auth Provider] Data received from API:", data); // Debug log
+      const data = await response.json();
+      console.log("[Auth Provider] Auth status response:", data);
 
       if (data.authenticated && data.user) {
-        console.log("[Auth Provider] User data:", data.user); // Debug log
-        console.log("[Auth Provider] total_spent:", data.user.total_spent); // Debug log
-        console.log("[Auth Provider] member_since:", data.user.member_since); // Debug log
+        console.log("[Auth Provider] User authenticated, updating profile");
         // Usuário autenticado, atualizar o perfil na store
         setProfile({
           id: data.user.id,
@@ -69,13 +71,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           member_since: data.user.member_since || data.user.created_at,
         });
       } else {
+        console.log("[Auth Provider] User not authenticated, clearing profile");
         // Usuário não está autenticado, limpar o perfil
         clearProfile();
       }
     } catch (error) {
-      console.error("Erro ao verificar autenticação:", error);
-      // Em caso de erro, assumir que não está autenticado
-      clearProfile();
+      console.error("[Auth Provider] Error checking authentication:", error);
+      // Em caso de erro, só limpar se não houver perfil válido no storage
+      if (!profile) {
+        clearProfile();
+      }
     } finally {
       setIsLoading(false);
     }
@@ -83,11 +88,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Verificar autenticação ao montar o componente
   useEffect(() => {
-    checkAuth();
+    // Se já temos um perfil no storage, não precisamos fazer loading
+    if (profile) {
+      console.log(
+        "[Auth Provider] Profile found in storage, skipping initial loading"
+      );
+      setIsLoading(false);
+      // Ainda assim, verificar em background para garantir que está atualizado
+      checkAuth();
+    } else {
+      console.log("[Auth Provider] No profile in storage, checking auth");
+      checkAuth();
+    }
 
     // Verificar novamente quando a página voltar a ficar visível
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
+        console.log("[Auth Provider] Page became visible, checking auth");
         checkAuth();
       }
     };
@@ -97,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []);
+  }, []); // Remover profile da dependência para evitar loops
 
   return (
     <AuthContext.Provider
@@ -111,12 +128,3 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
-// Hook para uso do contexto de autenticação
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth deve ser usado dentro de um AuthProvider");
-  }
-  return context;
-};

@@ -1,13 +1,13 @@
-import { BlogPost } from "@/data/store";
+import { BlogPost } from "@/types/blog";
 import { MagicCard } from "@/components/ui/magic-card";
 import {
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -45,15 +45,30 @@ export function BlogCard({ blog, index }: BlogCardProps) {
               {blog.title}
             </Link>
           </CardTitle>
-          <CardDescription className="flex items-center gap-2 mt-2">
+          <div className="text-sm text-muted-foreground flex items-center gap-2 mt-2">
             <span className="text-red-500">{blog.date}</span>
             <span className="text-muted-foreground">·</span>
             <span className="text-muted-foreground">{blog.readTime}</span>
-            <span className="text-muted-foreground">·</span>
-            <span className="text-muted-foreground">
-              By {blog.author?.name}
-            </span>
-          </CardDescription>
+            {blog.author && (
+              <>
+                <span className="text-muted-foreground">·</span>
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-5 w-5">
+                    <AvatarImage
+                      src={blog.author.avatar || "/default-avatar.png"}
+                      alt={blog.author.name || "Author"}
+                    />
+                    <AvatarFallback className="text-xs">
+                      {blog.author.name?.charAt(0) || "A"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-muted-foreground">
+                    {blog.author.name}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground line-clamp-3">

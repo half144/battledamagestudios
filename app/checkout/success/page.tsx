@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useCartStore } from "@/store/cart";
 import { motion } from "framer-motion";
 
-export default function CheckoutSuccess() {
+function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const [isLoading, setIsLoading] = useState(true);
@@ -19,8 +19,8 @@ export default function CheckoutSuccess() {
     // Limpar o carrinho após checkout bem-sucedido
     if (sessionId) {
       clearCart();
-      setIsLoading(false);
     }
+    setIsLoading(false);
   }, [sessionId, clearCart]);
 
   if (isLoading) {
@@ -90,5 +90,21 @@ export default function CheckoutSuccess() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-background pt-24 flex items-center justify-center">
+      <div className="animate-spin inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+    </div>
+  );
+}
+
+export default function CheckoutSuccess() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <CheckoutSuccessContent />
+    </Suspense>
   );
 }

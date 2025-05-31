@@ -26,26 +26,27 @@ interface ProfileStore {
 
 export const useProfileStore = create<ProfileStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       profile: null,
       isLoading: true,
       isAuthenticated: false,
 
       setProfile: (profile) => {
+        console.log("[ProfileStore] Setting profile:", profile);
         set({
           profile,
           isAuthenticated: !!profile,
           isLoading: false,
         });
-        // Log para depuração
-        console.log("[ProfileStore] Profile set:", profile);
       },
 
       setLoading: (isLoading) => {
+        console.log("[ProfileStore] Setting loading:", isLoading);
         set({ isLoading });
       },
 
       clearProfile: () => {
+        console.log("[ProfileStore] Clearing profile");
         set({
           profile: null,
           isAuthenticated: false,
@@ -54,6 +55,7 @@ export const useProfileStore = create<ProfileStore>()(
       },
 
       refreshProfile: () => {
+        console.log("[ProfileStore] Refreshing profile");
         // Limpar o cache do sessionStorage e forçar reload
         sessionStorage.removeItem("profile-storage");
         set({
@@ -74,6 +76,13 @@ export const useProfileStore = create<ProfileStore>()(
         profile: state.profile,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        console.log("[ProfileStore] Rehydrating from storage:", state);
+        if (state) {
+          // Garantir que o estado seja consistente após rehydration
+          state.isLoading = false;
+        }
+      },
     }
   )
 );

@@ -13,7 +13,7 @@ export function BlogSearch({ searchQuery, onSearchChange }: BlogSearchProps) {
       <div className="flex items-center border-b border-zinc-700 focus-within:border-red-500 pb-1 transition-colors duration-200">
         <Search className="text-zinc-400 w-5 h-5 flex-shrink-0" />
         <Input
-          placeholder="Buscar artigos..."
+          placeholder="Search..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-3 py-2 text-base placeholder:text-zinc-500"

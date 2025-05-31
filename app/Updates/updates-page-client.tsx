@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { BlogPost } from "@/types/blog";
 import { BlogHeader } from "@/components/blog/blog-header";
 import { BlogSearch } from "@/components/blog/blog-search";
 import { BlogCard } from "@/components/blog/blog-card";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Layout } from "lucide-react";
@@ -17,7 +17,26 @@ interface UpdatesPageClientProps {
 
 export default function UpdatesPageClient({ blogs }: UpdatesPageClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const { isAdmin } = useAuth();
+  const { profile, isAuthenticated, isLoading } = useAuthStatus();
+
+  // Definir isAdmin baseado no perfil
+  const isAdmin = profile?.role === "admin";
+
+  // Debug log para a página Updates
+  useEffect(() => {
+    console.log("[UpdatesPageClient] Component mounted/updated:", {
+      profile: profile
+        ? {
+            id: profile.id,
+            username: profile.username,
+            avatar_url: profile.avatar_url,
+          }
+        : null,
+      isAuthenticated,
+      isLoading,
+      isAdmin,
+    });
+  }, [profile, isAuthenticated, isLoading, isAdmin]);
 
   const filteredBlogs = blogs.filter(
     (blog) =>

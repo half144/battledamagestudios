@@ -6,14 +6,15 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { MagicCard } from "@/components/ui/magic-card";
 import type { BlogPost } from "@/types/blog";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
 
 interface PostDetailProps {
   post: BlogPost;
 }
 
 export default function PostDetail({ post }: PostDetailProps) {
-  const { isAdmin } = useAuth();
+  const { profile } = useAuthStatus();
+  const isAdmin = profile?.role === "admin";
 
   return (
     <div className="container mx-auto px-4 py-24">

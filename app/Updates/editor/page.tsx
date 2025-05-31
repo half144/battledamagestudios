@@ -48,7 +48,7 @@ async function getPostForEdit(id: string | null): Promise<BlogPost | null> {
     let author = undefined;
     if (post.author_id) {
       const authorResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${post.author_id}`,
+        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${post.author_id}&select=id,username,avatar_url,full_name`,
         {
           method: "GET",
           headers: getApiHeaders(),
@@ -64,8 +64,8 @@ async function getPostForEdit(id: string | null): Promise<BlogPost | null> {
         const authors = await authorResponse.json();
         if (authors && authors.length > 0) {
           author = {
-            name: authors[0].username,
-            avatar: "/default-avatar.png",
+            name: authors[0].full_name || authors[0].username,
+            avatar: authors[0].avatar_url || "/default-avatar.png",
           };
         }
       }

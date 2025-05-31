@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles, Menu, X, User, LogOut, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Cart } from "@/components/cart";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -28,6 +28,21 @@ export function Header() {
   const [syncingSession, setSyncingSession] = useState(false);
   const { profile, isLoading, isAuthenticated, checkAuth } = useAuthStatus();
   const { toast } = useToast();
+
+  // Debug logs para entender quando o perfil some
+  useEffect(() => {
+    console.log("[Header] Profile state changed:", {
+      profile: profile
+        ? {
+            id: profile.id,
+            username: profile.username,
+            avatar_url: profile.avatar_url,
+          }
+        : null,
+      isLoading,
+      isAuthenticated,
+    });
+  }, [profile, isLoading, isAuthenticated]);
 
   const handleSignOut = async () => {
     // Fazer logout usando a API REST
@@ -100,6 +115,12 @@ export function Header() {
                       <AvatarImage
                         src={profile?.avatar_url || undefined}
                         alt="Profile"
+                        onError={(e) => {
+                          console.log(
+                            "[Header] Avatar image failed to load:",
+                            profile?.avatar_url
+                          );
+                        }}
                       />
                       <AvatarFallback className="bg-red-500/10 text-red-500">
                         <User className="h-4 w-4" />
@@ -226,6 +247,12 @@ export function Header() {
                       <AvatarImage
                         src={profile?.avatar_url || undefined}
                         alt="Profile"
+                        onError={(e) => {
+                          console.log(
+                            "[Header Mobile] Avatar image failed to load:",
+                            profile?.avatar_url
+                          );
+                        }}
                       />
                       <AvatarFallback className="bg-red-500/10 text-red-500">
                         <User className="h-4 w-4" />
