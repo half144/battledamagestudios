@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 300;
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 async function getIsAdmin() {
   try {
