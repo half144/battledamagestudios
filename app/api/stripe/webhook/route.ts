@@ -14,6 +14,8 @@ const relevantEvents = new Set([
 ]);
 
 export async function POST(request: NextRequest) {
+  console.log("🚀 Webhook recebido - iniciando processamento");
+
   const body = await request.text();
   const sig = request.headers.get("stripe-signature") as string;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -29,6 +31,7 @@ export async function POST(request: NextRequest) {
       );
     }
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+    console.log(`✅ Evento validado: ${event.id} (${event.type})`);
   } catch (err: any) {
     console.log(`❌ Error message: ${err.message}`);
     return NextResponse.json(
@@ -56,6 +59,7 @@ export async function POST(request: NextRequest) {
 
   try {
     if (relevantEvents.has(event.type)) {
+      console.log(`📋 Evento relevante detectado: ${event.type}`);
       await addEventToQueue(event);
       console.log(
         `⚡ Evento ${event.id} (${event.type}) adicionado à fila - Retornando 200`

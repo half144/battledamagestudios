@@ -4,9 +4,23 @@ import { sendPurchaseConfirmationEmail } from "@/lib/email";
 import Stripe from "stripe";
 
 const webhookQueue = new PQueue({
-  concurrency: 3,
-  interval: 300,
-  intervalCap: 5,
+  concurrency: 1,
+  interval: 1000,
+  intervalCap: 1,
+});
+
+webhookQueue.on("active", () => {
+  console.log(
+    `🔄 Queue ativa - Size: ${webhookQueue.size}, Pending: ${webhookQueue.pending}`
+  );
+});
+
+webhookQueue.on("idle", () => {
+  console.log("✅ Queue idle - todos os jobs processados");
+});
+
+webhookQueue.on("error", (error) => {
+  console.error("❌ Erro na queue:", error);
 });
 
 interface WebhookJob {
@@ -153,28 +167,44 @@ async function processWebhookEvent(job: WebhookJob): Promise<void> {
         console.log(`ℹ️ Evento processado sem ação específica: ${event.type}`);
     }
 
-    await supabaseAdmin.from("processed_stripe_events").insert({
-      stripe_event_id: event.id,
-      event_type: event.type,
-    });
+    console.log(`🔄 Tentando marcar evento como processado: ${event.id}`);
+
+    const { error: insertError } = await supabaseAdmin
+      .from("processed_stripe_events")
+      .insert({
+        stripe_event_id: event.id,
+        event_type: event.type,
+      });
+
+    if (insertError) {
+      console.error(`❌ Erro ao inserir evento processado:`, insertError);
+      throw insertError;
+    }
 
     console.log(`✅ Evento processado e marcado como concluído: ${event.id}`);
   } catch (error) {
     console.error(`❌ Erro ao processar evento ${event.id}:`, error);
-
     throw error;
   }
 }
 
 export async function addEventToQueue(event: Stripe.Event): Promise<void> {
+  console.log(`📥 Adicionando evento à fila: ${event.id} (${event.type})`);
+
   const job: WebhookJob = {
     event,
     timestamp: Date.now(),
   };
 
-  await webhookQueue.add(() => processWebhookEvent(job));
-
-  console.log(`📥 Evento adicionado à fila: ${event.id} (${event.type})`);
+  try {
+    await webhookQueue.add(() => processWebhookEvent(job));
+    console.log(
+      `✅ Evento adicionado à fila com sucesso: ${event.id} (${event.type})`
+    );
+  } catch (error) {
+    console.error(`❌ Erro ao adicionar evento à fila:`, error);
+    throw error;
+  }
 }
 
 export function getQueueStatus() {
