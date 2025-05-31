@@ -91,15 +91,11 @@ export async function POST(request: NextRequest) {
           console.log("Order created:", order.id);
 
           for (const itemData of itemsFromMetadata) {
-            // Nao ha mais busca pelo product_id interno. Usaremos o stripe_product_id diretamente.
-            // Certifique-se que as colunas product_id em order_items e user_purchases sao do tipo TEXT.
-
             const { error: itemError } = await supabaseAdmin
               .from("order_items")
               .insert({
                 order_id: order.id,
-                product_id: itemData.stripe_product_id, // Usando o ID do produto do Stripe
-                price: itemData.price,
+                product_id: itemData.stripe_product_id,
                 quantity: itemData.quantity,
               });
             if (itemError) {
@@ -113,7 +109,7 @@ export async function POST(request: NextRequest) {
               .from("user_purchases")
               .insert({
                 user_id: userId,
-                product_id: itemData.stripe_product_id, // Usando o ID do produto do Stripe
+                product_id: itemData.stripe_product_id,
                 purchase_date: new Date().toISOString(),
                 stripe_payment_intent_id:
                   typeof checkoutSession.payment_intent === "string"
@@ -132,7 +128,6 @@ export async function POST(request: NextRequest) {
             order.id
           );
 
-          // 4. Atualizar 'profiles' (total_spent, total_orders)
           if (checkoutSession.amount_total) {
             const { error: profileError } = await supabaseAdmin.rpc(
               "increment_user_stats",
