@@ -36,8 +36,26 @@ export default function RegisterPage() {
     setSuccessMessage("");
     setIsLoading(true);
 
+    if (!formData.username.trim()) {
+      setErrorMessage("Username is required.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setErrorMessage("Email is required.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.password.trim()) {
+      setErrorMessage("Password is required.");
+      setIsLoading(false);
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
-      setErrorMessage("As senhas não correspondem.");
+      setErrorMessage("Passwords do not match.");
       setIsLoading(false);
       return;
     }
@@ -50,15 +68,15 @@ export default function RegisterPage() {
       );
 
       if (!success) {
-        throw new Error(error || "Erro no registro");
+        throw new Error(error || "Registration failed");
       }
 
-      setSuccessMessage("Conta criada com sucesso! Redirecionando...");
+      setSuccessMessage("Account created successfully! Redirecting...");
       setTimeout(() => {
         router.push("/login");
       }, 2000);
     } catch (error: any) {
-      setErrorMessage(error.message || "Falha no registro.");
+      setErrorMessage(error.message || "Registration failed.");
     } finally {
       setIsLoading(false);
     }
@@ -68,17 +86,17 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-[400px]">
         <CardHeader>
-          <CardTitle>Registrar</CardTitle>
-          <CardDescription>Crie uma nova conta para começar</CardDescription>
+          <CardTitle>Register</CardTitle>
+          <CardDescription>Create a new account to get started</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Nome de Usuário</label>
+              <label className="text-sm font-medium">Username</label>
               <Input
                 type="text"
                 name="username"
-                placeholder="Digite seu nome de usuário"
+                placeholder="Enter your username"
                 className="w-full"
                 value={formData.username}
                 onChange={handleInputChange}
@@ -90,7 +108,7 @@ export default function RegisterPage() {
               <Input
                 type="email"
                 name="email"
-                placeholder="Digite seu email"
+                placeholder="Enter your email"
                 className="w-full"
                 value={formData.email}
                 onChange={handleInputChange}
@@ -98,11 +116,11 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Senha</label>
+              <label className="text-sm font-medium">Password</label>
               <Input
                 type="password"
                 name="password"
-                placeholder="Digite sua senha"
+                placeholder="Enter your password"
                 className="w-full"
                 value={formData.password}
                 onChange={handleInputChange}
@@ -110,11 +128,11 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Confirmar Senha</label>
+              <label className="text-sm font-medium">Confirm Password</label>
               <Input
                 type="password"
                 name="confirmPassword"
-                placeholder="Confirme sua senha"
+                placeholder="Confirm your password"
                 className="w-full"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
@@ -130,14 +148,14 @@ export default function RegisterPage() {
             )}
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Criando conta..." : "Criar Conta"}
+              {isLoading ? "Creating account..." : "Create Account"}
             </Button>
           </form>
           <div className="mt-4 text-center">
             <p className="text-sm">
-              Já tem uma conta?{" "}
+              Already have an account?{" "}
               <Link href="/login" className="hover:underline">
-                Entrar
+                Sign in
               </Link>
             </p>
           </div>

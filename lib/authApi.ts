@@ -138,6 +138,13 @@ export const signUpWithEmailApi = async (
   username: string
 ): Promise<{ success: boolean; error?: string; userId?: string }> => {
   try {
+    console.log(
+      "[SignUp] Starting registration process for:",
+      email,
+      "with username:",
+      username
+    );
+
     // Endpoint padrão de registro do Supabase
     const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
       method: "POST",
@@ -145,64 +152,82 @@ export const signUpWithEmailApi = async (
         "Content-Type": "application/json",
         apikey: SUPABASE_API_KEY || "",
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({
+        email,
+        password,
+        data: {
+          username: username,
+        },
+      }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error("[SignUp] Auth signup failed:", errorData);
       return {
         success: false,
-        error: errorData.error_description || "Falha no registro",
+        error: errorData.error_description || "Registration failed",
       };
     }
 
     const userData = await response.json();
+    console.log("[SignUp] Auth signup successful:", userData);
 
-    // Criar perfil associado ao usuário
-    if (userData && userData.id) {
-      const accessToken = userData.access_token;
+    // Check if user was created successfully
+    if (userData && userData.user && userData.user.id) {
+      const userId = userData.user.id;
+      console.log("[SignUp] User created successfully with ID:", userId);
 
-      if (accessToken) {
-        // Criar perfil na tabela profiles
-        const profileResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/profiles`,
+      // The profile should be created automatically by the database trigger
+      // Wait a moment for the trigger to execute
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Verify that the profile was created
+      try {
+        const profileCheck = await fetch(
+          `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=id,username`,
           {
-            method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
               apikey: SUPABASE_API_KEY || "",
-              Prefer: "return=representation",
             },
-            body: JSON.stringify({
-              id: userData.id,
-              username,
-              role: "user",
-              created_at: new Date().toISOString(),
-            }),
           }
         );
 
-        if (!profileResponse.ok) {
-          console.error(
-            "Erro ao criar perfil para o usuário:",
-            await profileResponse.text()
-          );
+        if (profileCheck.ok) {
+          const profiles = await profileCheck.json();
+          if (profiles && profiles.length > 0) {
+            console.log(
+              "[SignUp] Profile created successfully by trigger:",
+              profiles[0]
+            );
+          } else {
+            console.warn("[SignUp] Profile not found after trigger execution");
+          }
         }
+      } catch (profileError) {
+        console.warn(
+          "[SignUp] Could not verify profile creation:",
+          profileError
+        );
       }
 
       return {
         success: true,
-        userId: userData.id,
+        userId: userId,
       };
     }
 
-    return { success: true };
-  } catch (error) {
-    console.error("Erro no processo de registro:", error);
+    console.error("[SignUp] Invalid user data received:", userData);
     return {
       success: false,
-      error: "Erro inesperado durante o registro",
+      error: "Invalid response from authentication service.",
+    };
+  } catch (error) {
+    console.error("[SignUp] Unexpected error during registration:", error);
+    return {
+      success: false,
+      error: "Unexpected error during registration. Please try again.",
     };
   }
 };
