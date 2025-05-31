@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
 
       // Buscar os pedidos do usuário com JOIN para obter detalhes dos itens
       const ordersResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/orders?user_id=eq.${userId}&select=*,order_items(*)&order=created_at.desc&limit=10`,
+        `${SUPABASE_URL}/rest/v1/orders?user_id=eq.${userId}&select=*,order_items(*)&order=created_at.desc&limit=50`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -105,7 +105,6 @@ export async function GET(request: NextRequest) {
         for (const item of order.order_items || []) {
           if (item.product_id) {
             const product = productData[item.product_id];
-            // Só incluir itens com product_id válido
             purchases.push({
               id: `${order.id}-${item.id}`,
               user_id: order.user_id,
@@ -119,8 +118,9 @@ export async function GET(request: NextRequest) {
               order_id: order.id,
               order_total: parseFloat(order.total_price || 0),
               payment_status: order.payment_status,
-              // Incluir metadados do produto
-              download_url: product?.metadata?.file || null,
+              // Usar dados de download dos order_items ou metadados do produto
+              download_url:
+                item.download_url || product?.metadata?.file || null,
               file_type: product?.metadata?.file_type || null,
               file_size: product?.metadata?.file_size || null,
               access_duration: product?.metadata?.access_duration || null,

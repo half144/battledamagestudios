@@ -111,34 +111,8 @@ export async function POST(request: NextRequest) {
                 `Failed to create order item: ${itemError.message}`
               );
             }
-
-            // Criar user_purchase
-            const { error: purchaseError } = await supabaseAdmin
-              .from("user_purchases")
-              .insert({
-                user_id: userId,
-                product_id: itemData.stripe_product_id,
-                purchase_date: new Date().toISOString(),
-                stripe_payment_intent_id:
-                  typeof checkoutSession.payment_intent === "string"
-                    ? checkoutSession.payment_intent
-                    : null,
-              });
-            if (purchaseError) {
-              console.error(
-                `Error creating user purchase for Stripe product ${itemData.stripe_product_id}:`,
-                purchaseError
-              );
-              // Don't continue if user_purchase creation fails
-              throw new Error(
-                `Failed to create user purchase: ${purchaseError.message}`
-              );
-            }
           }
-          console.log(
-            "Order items and user purchases created for order:",
-            order.id
-          );
+          console.log("Order items created for order:", order.id);
 
           if (checkoutSession.amount_total) {
             const { error: profileError } = await supabaseAdmin.rpc(
