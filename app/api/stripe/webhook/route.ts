@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { supabaseAdmin } from "@/lib/supabaseAdmin"; // Precisaremos de um cliente admin do Supabase
+import { sendPurchaseConfirmationEmail } from "@/lib/email";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-05-28.basil",
@@ -149,9 +150,71 @@ export async function POST(request: NextRequest) {
             );
             if (profileError) {
               console.error("Error updating profile stats:", profileError);
-              // Não retornar erro aqui necessariamente, mas logar
             }
             console.log("Profile stats updated for user:", userId);
+          }
+
+          // Buscar dados do usuário para envio do email
+          const { data: userData, error: userError } = await supabaseAdmin
+            .from("profiles")
+            .select("username, full_name")
+            .eq("id", userId)
+            .single();
+
+          if (userError) {
+            console.error("Error fetching user data for email:", userError);
+          }
+
+          // Buscar email do usuário através da auth
+          const { data: authUser, error: authError } =
+            await supabaseAdmin.auth.admin.getUserById(userId);
+
+          if (authError) {
+            console.error(
+              "Error fetching user auth data for email:",
+              authError
+            );
+          }
+
+          // Enviar email de confirmação de compra
+          if (authUser?.user?.email && checkoutSession.amount_total) {
+            try {
+              const emailSuccess = await sendPurchaseConfirmationEmail({
+                customerEmail: authUser.user.email,
+                customerName:
+                  userData?.full_name || userData?.username || undefined,
+                orderId: order.id,
+                orderTotal: checkoutSession.amount_total / 100,
+                items: itemsFromMetadata.map((item) => ({
+                  name: item.name,
+                  quantity: item.quantity,
+                  price: item.price,
+                })),
+                paymentIntentId:
+                  typeof checkoutSession.payment_intent === "string"
+                    ? checkoutSession.payment_intent
+                    : undefined,
+              });
+
+              if (emailSuccess) {
+                console.log(
+                  "✅ Purchase confirmation email sent to:",
+                  authUser.user.email
+                );
+              } else {
+                console.error("❌ Failed to send purchase confirmation email");
+              }
+            } catch (emailError) {
+              console.error(
+                "❌ Error sending purchase confirmation email:",
+                emailError
+              );
+            }
+          } else {
+            console.error(
+              "❌ No email found for user or invalid amount:",
+              userId
+            );
           }
 
           break;
