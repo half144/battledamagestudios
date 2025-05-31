@@ -13,6 +13,11 @@ export interface UserPurchase {
   order_id: string;
   order_total: number;
   payment_status: string;
+  // Metadados do produto do Stripe
+  download_url: string | null;
+  file_type: string | null;
+  file_size: string | null;
+  access_duration: string | null;
 }
 
 export interface GroupedOrder {
@@ -29,6 +34,11 @@ export interface GroupedOrder {
     unit_price: number;
     total_price: number;
     product_id: string;
+    // Metadados para download
+    download_url: string | null;
+    file_type: string | null;
+    file_size: string | null;
+    access_duration: string | null;
   }[];
 }
 
@@ -110,6 +120,10 @@ export function useUserPurchases(): UseUserPurchasesReturn {
         unit_price: purchase.unit_price,
         total_price: purchase.total_amount,
         product_id: purchase.product_id,
+        download_url: purchase.download_url,
+        file_type: purchase.file_type,
+        file_size: purchase.file_size,
+        access_duration: purchase.access_duration,
       });
       order.items = order.products.length;
     });

@@ -4,7 +4,8 @@ import { SUPABASE_URL, SUPABASE_API_KEY } from "@/lib/supabaseApi";
 export async function PATCH(request: NextRequest) {
   try {
     const authCookie = request.cookies.get(
-      "sb-rnqhnainrwsbyeyvttcm-auth-token"
+      process.env.NEXT_PUBLIC_SUPABASE_AUTH_COOKIE_NAME ||
+        "sb-rnqhnainrwsbyeyvttcm-auth-token"
     );
 
     if (!authCookie) {
@@ -24,6 +25,7 @@ export async function PATCH(request: NextRequest) {
           Authorization: `Bearer ${accessToken}`,
           apikey: SUPABASE_API_KEY || "",
         },
+        cache: "no-store",
       });
 
       if (!userData.ok) {
@@ -57,6 +59,7 @@ export async function PATCH(request: NextRequest) {
             Prefer: "return=representation",
           },
           body: JSON.stringify(updateData),
+          cache: "no-store",
         }
       );
 

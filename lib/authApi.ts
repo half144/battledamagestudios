@@ -11,7 +11,7 @@ const AUTH_COOKIE_NAME = "sb-rnqhnainrwsbyeyvttcm-auth-token";
 export const getUserProfileApi = async (): Promise<ProfileData | null> => {
   try {
     // Fazer a requisição para o endpoint que verifica a autenticação
-    const response = await fetch("/api/auth/check");
+    const response = await fetch("/api/auth/check", { cache: "no-store" });
 
     if (!response.ok) {
       throw new Error("Falha ao obter dados do usuário");

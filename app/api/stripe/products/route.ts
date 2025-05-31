@@ -16,37 +16,6 @@ export async function GET(request: NextRequest) {
 
     console.log("📦 Produtos encontrados:", products.data.length);
 
-    products.data.forEach((product, index) => {
-      console.log(`\n--- Produto ${index + 1} ---`);
-      console.log("ID:", product.id);
-      console.log("Nome:", product.name);
-      console.log("Descrição:", product.description);
-      console.log("Ativo:", product.active);
-      console.log(
-        "Criado em:",
-        new Date(product.created * 1000).toLocaleString()
-      );
-
-      if (product.default_price && typeof product.default_price === "object") {
-        console.log("Preço ID:", product.default_price.id);
-        console.log(
-          "Preço:",
-          product.default_price.unit_amount
-            ? product.default_price.unit_amount / 100
-            : "N/A"
-        );
-        console.log("Moeda:", product.default_price.currency);
-      }
-
-      if (product.images && product.images.length > 0) {
-        console.log("Imagens:", product.images);
-      }
-
-      if (product.metadata && Object.keys(product.metadata).length > 0) {
-        console.log("Metadados:", product.metadata);
-      }
-    });
-
     return NextResponse.json({
       success: true,
       count: products.data.length,

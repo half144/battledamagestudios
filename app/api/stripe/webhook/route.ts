@@ -91,20 +91,27 @@ export async function POST(request: NextRequest) {
           console.log("Order created:", order.id);
 
           for (const itemData of itemsFromMetadata) {
+            // Criar order_item
             const { error: itemError } = await supabaseAdmin
               .from("order_items")
               .insert({
                 order_id: order.id,
                 product_id: itemData.stripe_product_id,
                 quantity: itemData.quantity,
+                price: itemData.price,
               });
             if (itemError) {
               console.error(
                 `Error creating order item for Stripe product ${itemData.stripe_product_id}:`,
                 itemError
               );
+              // Don't continue if order_item creation fails
+              throw new Error(
+                `Failed to create order item: ${itemError.message}`
+              );
             }
 
+            // Criar user_purchase
             const { error: purchaseError } = await supabaseAdmin
               .from("user_purchases")
               .insert({
@@ -120,6 +127,10 @@ export async function POST(request: NextRequest) {
               console.error(
                 `Error creating user purchase for Stripe product ${itemData.stripe_product_id}:`,
                 purchaseError
+              );
+              // Don't continue if user_purchase creation fails
+              throw new Error(
+                `Failed to create user purchase: ${purchaseError.message}`
               );
             }
           }
@@ -144,13 +155,13 @@ export async function POST(request: NextRequest) {
           }
 
           break;
-        case "payment_intent.succeeded":
+        /* case "payment_intent.succeeded":
           const paymentIntentSucceeded = event.data
             .object as Stripe.PaymentIntent;
           console.log("✅ PaymentIntent Succeeded:", paymentIntentSucceeded.id);
           // Lógica para lidar com pagamento bem-sucedido (pode ser redundante se já tratado no checkout.session.completed)
           // Útil para pagamentos diretos sem checkout session, ou para reconciliação.
-          break;
+          break; */
         case "payment_intent.payment_failed":
           const paymentIntentFailed = event.data.object as Stripe.PaymentIntent;
           console.log("❌ PaymentIntent Failed:", paymentIntentFailed.id);

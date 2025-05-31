@@ -11,7 +11,6 @@ export interface ProfileData {
   created_at?: string; // Ou Date, dependendo de como você for tratar
   updated_at?: string; // Ou Date
   total_spent?: number;
-  total_orders?: number;
   member_since?: string; // Ou Date
 }
 
@@ -38,6 +37,8 @@ export const useProfileStore = create<ProfileStore>()(
           isAuthenticated: !!profile,
           isLoading: false,
         });
+        // Log para depuração
+        console.log("[ProfileStore] Profile set:", profile);
       },
 
       setLoading: (isLoading) => {
@@ -60,7 +61,7 @@ export const useProfileStore = create<ProfileStore>()(
           isAuthenticated: false,
           isLoading: true,
         });
-        // Trigger a re-fetch by reloading the page or calling checkAuth
+        // Trigger a re-fetch by reloading the page
         if (typeof window !== "undefined") {
           window.location.reload();
         }

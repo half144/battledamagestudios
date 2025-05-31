@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
           Authorization: `Bearer ${accessToken}`,
           apikey: SUPABASE_API_KEY || "",
         },
+        cache: "no-store",
       });
 
       // Se o token não for válido, retornar não autenticado
@@ -55,12 +56,13 @@ export async function GET(request: NextRequest) {
 
       // Buscar perfil personalizado do usuário na tabela profiles
       const profileResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userData.id}&select=*`,
+        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userData.id}&select=id,username,role,avatar_url,full_name,created_at,updated_at,total_spent,member_since`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
             apikey: SUPABASE_API_KEY || "",
           },
+          cache: "no-store",
         }
       );
 

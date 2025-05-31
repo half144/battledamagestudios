@@ -52,6 +52,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (data.authenticated && data.user) {
         console.log("[Auth Provider] User data:", data.user); // Debug log
+        console.log("[Auth Provider] total_spent:", data.user.total_spent); // Debug log
+        console.log("[Auth Provider] member_since:", data.user.member_since); // Debug log
         // Usuário autenticado, atualizar o perfil na store
         setProfile({
           id: data.user.id,
@@ -64,7 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           created_at: data.user.created_at,
           updated_at: data.user.updated_at,
           total_spent: data.user.total_spent || 0,
-          total_orders: data.user.total_orders || 0,
           member_since: data.user.member_since || data.user.created_at,
         });
       } else {

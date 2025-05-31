@@ -19,7 +19,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Package, Search, Filter, ShoppingBag } from "lucide-react";
+import {
+  Package,
+  Search,
+  Filter,
+  ShoppingBag,
+  Download,
+  ExternalLink,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserPurchases, GroupedOrder } from "@/hooks/useUserPurchases";
@@ -236,45 +243,69 @@ export default function OrdersPage() {
                     <TableHead>Date</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Items</TableHead>
+                    <TableHead>Downloads</TableHead>
                     <TableHead className="text-right">Total</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">
-                        {order.id.slice(0, 8)}...
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(order.date), "MMM dd, yyyy")}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            order.status === "Delivered"
-                              ? "default"
-                              : "secondary"
-                          }
-                        >
-                          {order.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{order.items}</TableCell>
-                      <TableCell className="text-right">
-                        ${order.total.toFixed(2)}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedOrder(order)}
-                        >
-                          View Details
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {filteredOrders.map((order) => {
+                    const hasDownloads = order.products.some(
+                      (p) => p.download_url
+                    );
+                    const downloadableItems = order.products.filter(
+                      (p) => p.download_url
+                    ).length;
+
+                    return (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium">
+                          {order.id.slice(0, 8)}...
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(order.date), "MMM dd, yyyy")}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              order.status === "Delivered"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
+                            {order.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{order.items}</TableCell>
+                        <TableCell>
+                          {hasDownloads ? (
+                            <div className="flex items-center gap-1 text-sm">
+                              <Download className="h-4 w-4 text-green-600" />
+                              <span className="text-green-600">
+                                {downloadableItems}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">
+                              -
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          ${order.total.toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedOrder(order)}
+                          >
+                            View Details
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             )}
@@ -328,18 +359,53 @@ export default function OrdersPage() {
                   {selectedOrder.products.map((product) => (
                     <div
                       key={product.id}
-                      className="flex justify-between items-center py-2 border-b last:border-0"
+                      className="flex justify-between items-center py-3 border-b last:border-0"
                     >
-                      <div>
+                      <div className="flex-1">
                         <p className="font-medium">{product.name}</p>
                         <p className="text-sm text-muted-foreground">
                           Quantity: {product.quantity} • $
                           {product.unit_price.toFixed(2)} each
                         </p>
+                        {product.file_size && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            File size: {product.file_size}
+                            {product.file_type &&
+                              ` • ${product.file_type.toUpperCase()}`}
+                          </p>
+                        )}
                       </div>
-                      <p className="font-medium">
-                        ${product.total_price.toFixed(2)}
-                      </p>
+                      <div className="flex items-center gap-3">
+                        <p className="font-medium">
+                          ${product.total_price.toFixed(2)}
+                        </p>
+                        {product.download_url &&
+                          selectedOrder.status === "Delivered" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex items-center gap-2"
+                              onClick={() =>
+                                window.open(product.download_url!, "_blank")
+                              }
+                            >
+                              <Download className="h-4 w-4" />
+                              Download
+                            </Button>
+                          )}
+                        {product.download_url &&
+                          selectedOrder.status !== "Delivered" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled
+                              className="flex items-center gap-2"
+                            >
+                              <Download className="h-4 w-4" />
+                              Pending
+                            </Button>
+                          )}
+                      </div>
                     </div>
                   ))}
                 </div>

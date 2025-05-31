@@ -11,12 +11,14 @@ import {
   Mail,
   CalendarDays,
   ShoppingBag,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { useUserPurchases } from "@/hooks/useUserPurchases";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -36,13 +38,14 @@ const staggerContainer = {
 export default function ProfilePage() {
   const { profile, isLoading, isAuthenticated } = useAuthStatus();
   const {
-    purchases,
+    groupedOrders: recentOrders,
+    totalOrders: userPurchasesTotalOrders,
     isLoading: purchasesLoading,
     error: purchasesError,
   } = useUserPurchases();
 
   console.log("[Profile Page] Current profile data:", profile);
-  console.log("[Profile Page] User purchases:", purchases);
+  console.log("[Profile Page] User purchases:", userPurchasesTotalOrders);
 
   if (isLoading) {
     return (
@@ -164,7 +167,11 @@ export default function ProfilePage() {
               <div>
                 <p className="text-sm font-medium">Total Orders</p>
                 <h3 className="text-2xl font-bold">
-                  {profile.total_orders ?? 0}
+                  {purchasesLoading ? (
+                    <Skeleton className="h-8 w-10" />
+                  ) : (
+                    userPurchasesTotalOrders ?? 0
+                  )}
                 </h3>
               </div>
             </CardContent>
@@ -290,7 +297,7 @@ export default function ProfilePage() {
               <div className="text-center py-8 text-muted-foreground">
                 <p>Error loading recent orders: {purchasesError}</p>
               </div>
-            ) : purchases.length === 0 ? (
+            ) : recentOrders.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <ShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No orders found</p>
@@ -300,43 +307,44 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {purchases.slice(0, 5).map((purchase) => (
+                {recentOrders.slice(0, 5).map((order) => (
                   <motion.div
-                    key={purchase.id}
+                    key={order.id}
                     className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                     whileHover={{ scale: 1.01 }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-primary/10 rounded">
-                        <Package className="h-6 w-6 text-primary" />
+                      <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
+                        <ShoppingBag className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="font-medium">{purchase.product_name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Qty: {purchase.quantity} •{" "}
-                          {format(
-                            new Date(purchase.purchase_date),
-                            "MMM dd, yyyy"
-                          )}
+                        <p className="font-medium truncate max-w-[150px] sm:max-w-[200px] md:max-w-[250px]">
+                          Order #{order.id.slice(0, 8)}...
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(order.date), "MMM dd, yyyy")}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">
-                        ${purchase.total_amount.toFixed(2)}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        ${purchase.unit_price.toFixed(2)} each
-                      </p>
+                      <p className="font-medium">${order.total.toFixed(2)}</p>
+                      <Badge
+                        variant={
+                          order.status === "Delivered" ? "default" : "secondary"
+                        }
+                        className="mt-1"
+                      >
+                        {order.status}
+                      </Badge>
                     </div>
                   </motion.div>
                 ))}
-                {purchases.length > 5 && (
+                {recentOrders.length > 5 && (
                   <div className="text-center pt-4">
                     <Link href="/profile/orders">
                       <Button variant="outline" size="sm">
-                        View {purchases.length - 5} more orders
+                        View {recentOrders.length - 5} more orders
                       </Button>
                     </Link>
                   </div>

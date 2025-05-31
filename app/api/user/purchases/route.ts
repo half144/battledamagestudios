@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
           Authorization: `Bearer ${accessToken}`,
           apikey: SUPABASE_API_KEY || "",
         },
+        cache: "no-store",
       });
 
       if (!userResponse.ok) {
@@ -60,6 +61,7 @@ export async function GET(request: NextRequest) {
             Authorization: `Bearer ${accessToken}`,
             apikey: SUPABASE_API_KEY || "",
           },
+          cache: "no-store",
         }
       );
 
@@ -79,15 +81,21 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Buscar informações dos produtos no Stripe
-      const productNames: Record<string, string> = {};
+      // Buscar informações dos produtos no Stripe incluindo metadados
+      const productData: Record<string, { name: string; metadata: any }> = {};
       for (const productId of productIds) {
         try {
           const product = await stripe.products.retrieve(productId);
-          productNames[productId] = product.name;
+          productData[productId] = {
+            name: product.name,
+            metadata: product.metadata || {},
+          };
         } catch (error) {
           console.error(`Error fetching product ${productId}:`, error);
-          productNames[productId] = `Product ${productId}`;
+          productData[productId] = {
+            name: `Product ${productId}`,
+            metadata: {},
+          };
         }
       }
 
@@ -96,13 +104,13 @@ export async function GET(request: NextRequest) {
       for (const order of orders) {
         for (const item of order.order_items || []) {
           if (item.product_id) {
+            const product = productData[item.product_id];
             // Só incluir itens com product_id válido
             purchases.push({
               id: `${order.id}-${item.id}`,
               user_id: order.user_id,
               product_id: item.product_id,
-              product_name:
-                productNames[item.product_id] || `Product ${item.product_id}`,
+              product_name: product?.name || `Product ${item.product_id}`,
               quantity: item.quantity || 1,
               unit_price: parseFloat(item.price || 0),
               total_amount: parseFloat(item.price || 0) * (item.quantity || 1),
@@ -111,6 +119,11 @@ export async function GET(request: NextRequest) {
               order_id: order.id,
               order_total: parseFloat(order.total_price || 0),
               payment_status: order.payment_status,
+              // Incluir metadados do produto
+              download_url: product?.metadata?.file || null,
+              file_type: product?.metadata?.file_type || null,
+              file_size: product?.metadata?.file_size || null,
+              access_duration: product?.metadata?.access_duration || null,
             });
           }
         }
