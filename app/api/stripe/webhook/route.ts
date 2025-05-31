@@ -45,6 +45,20 @@ export async function POST(request: NextRequest) {
           console.log("🛒 Checkout Session Completed:", checkoutSession.id);
           console.log("Checkout Session Metadata:", checkoutSession.metadata);
 
+          // Verificar se já processamos este checkout session (proteção contra duplicatas)
+          const { data: existingOrder } = await supabaseAdmin
+            .from("orders")
+            .select("id")
+            .eq("stripe_checkout_id", checkoutSession.id)
+            .single();
+
+          if (existingOrder) {
+            console.log(
+              `✅ Evento duplicado ignorado - Order já existe para checkout: ${checkoutSession.id}`
+            );
+            return NextResponse.json({ received: true });
+          }
+
           const userId = checkoutSession.metadata?.userId;
           const itemsString = checkoutSession.metadata?.items;
 
