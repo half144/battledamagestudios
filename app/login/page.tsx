@@ -43,7 +43,27 @@ export default function LoginPage() {
       const { success, error } = await signInWithEmailApi(email, password);
 
       if (!success) {
-        setError(error || "Login failed");
+        if (
+          error?.includes("email not confirmed") ||
+          error?.includes("Email not confirmed")
+        ) {
+          setError(
+            "Please check your email and click the confirmation link before signing in."
+          );
+        } else if (error?.includes("Invalid login credentials")) {
+          setError(
+            "Invalid email or password. Please check your credentials and try again."
+          );
+        } else if (error?.includes("Too many requests")) {
+          setError(
+            "Too many login attempts. Please wait a few minutes before trying again."
+          );
+        } else {
+          setError(
+            error ||
+              "Login failed. Please check your credentials and try again."
+          );
+        }
       } else {
         setSuccess("Login successful! Redirecting...");
 
@@ -133,7 +153,24 @@ export default function LoginPage() {
                 required
               />
             </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && (
+              <div className="space-y-2">
+                <p className="text-red-500 text-sm">{error}</p>
+                {error.includes("confirmation") && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-sm text-blue-800">
+                      <strong>Need help?</strong> Check your email inbox
+                      (including spam folder) for the confirmation email. If you
+                      can't find it, you may need to{" "}
+                      <Link href="/register" className="underline font-medium">
+                        register again
+                      </Link>
+                      .
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
             {success && <p className="text-green-500 text-sm">{success}</p>}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Logging in..." : "Login"}

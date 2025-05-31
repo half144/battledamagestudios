@@ -174,8 +174,9 @@ export const signUpWithEmailApi = async (
     console.log("[SignUp] Auth signup successful:", userData);
 
     // Check if user was created successfully
-    if (userData && userData.user && userData.user.id) {
-      const userId = userData.user.id;
+    // The response structure has the user data directly, not nested under 'user'
+    if (userData && userData.id) {
+      const userId = userData.id;
       console.log("[SignUp] User created successfully with ID:", userId);
 
       // The profile should be created automatically by the database trigger
