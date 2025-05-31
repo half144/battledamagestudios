@@ -13,7 +13,7 @@ export interface StripeProduct {
   created: number;
   unit_label: string;
   metadata: Record<string, string>;
-  default_price: StripePrice;
+  default_price: StripePrice | null;
 }
 
 export interface StripeProductsResponse {

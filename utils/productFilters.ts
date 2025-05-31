@@ -18,7 +18,13 @@ export type PriceRange = (typeof PRICE_RANGES)[keyof typeof PRICE_RANGES];
 export type SortOption = (typeof SORT_OPTIONS)[keyof typeof SORT_OPTIONS];
 
 export const getProductPrice = (product: StripeProduct): number => {
-  return product.default_price.unit_amount / 100;
+  if (
+    product.default_price &&
+    typeof product.default_price.unit_amount === "number"
+  ) {
+    return product.default_price.unit_amount / 100;
+  }
+  return 0; // Or handle as an error, or return undefined
 };
 
 export const getProductCategory = (product: StripeProduct): string => {

@@ -210,23 +210,106 @@ export const syncSessionApi = async (): Promise<{
   error?: string;
 }> => {
   try {
-    const response = await fetch("/api/auth/check");
+    const response = await fetch("/api/auth/sync-session", { method: "POST" });
+    if (!response.ok) {
+      const errorData = await response.json();
+      return {
+        success: false,
+        error: errorData.message || "Session sync failed",
+      };
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error syncing session:", error);
+    return { success: false, error: "Unexpected error during session sync" };
+  }
+};
+
+// Tipagem para os pedidos e seus itens
+export interface OrderItemProduct {
+  name: string;
+  image_url?: string | null;
+}
+
+export interface OrderItem {
+  id: string;
+  quantity: number;
+  price: number; // Preço no momento da compra do item
+  products: OrderItemProduct | null; // Nome do produto e imagem
+}
+
+export interface UserOrder {
+  id: string; // Order ID
+  created_at: string; // Data do pedido
+  payment_status: string | null; // Status do pagamento (ex: 'paid', 'unpaid')
+  total_price: number; // Total do pedido
+  order_items: OrderItem[]; // Itens do pedido
+  // Adicionar quaisquer outros campos de 'orders' que você queira exibir
+}
+
+/**
+ * Busca os pedidos de um usuário específico, incluindo os itens de cada pedido e nome/imagem dos produtos.
+ * @param userId ID do usuário
+ * @returns Array de pedidos do usuário ou null em caso de erro.
+ */
+export const getUserOrders = async (
+  userId: string
+): Promise<UserOrder[] | null> => {
+  if (!userId) return null;
+
+  try {
+    const response = await fetch(`/api/users/${userId}/orders`);
 
     if (!response.ok) {
-      return { success: false, error: "Erro ao verificar sessão" };
+      console.error(
+        `Failed to fetch orders for user ${userId}: ${response.statusText}`
+      );
+      return null;
     }
+    const data = await response.json();
+    return data.orders as UserOrder[];
+  } catch (error) {
+    console.error(`Error fetching orders for user ${userId}:`, error);
+    return null;
+  }
+};
+
+/**
+ * Atualiza os dados do perfil do usuário
+ * @param profileData Dados do perfil a serem atualizados
+ * @returns Resultado da operação
+ */
+export const updateUserProfileApi = async (profileData: {
+  full_name?: string;
+  avatar_url?: string;
+}): Promise<{ success: boolean; error?: string; profile?: any }> => {
+  try {
+    const response = await fetch("/api/profile/update", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(profileData),
+    });
 
     const data = await response.json();
 
+    if (!response.ok) {
+      return {
+        success: false,
+        error: data.error || "Failed to update profile",
+      };
+    }
+
     return {
-      success: data.authenticated,
-      error: data.authenticated ? undefined : "Sessão inválida ou expirada",
+      success: true,
+      profile: data.profile,
     };
   } catch (error) {
-    console.error("Erro ao sincronizar sessão:", error);
+    console.error("Error updating profile:", error);
     return {
       success: false,
-      error: "Erro inesperado durante a sincronização",
+      error: "Unexpected error during profile update",
     };
   }
 };

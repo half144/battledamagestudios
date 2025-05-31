@@ -19,76 +19,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Package, Search, Filter } from "lucide-react";
+import { Package, Search, Filter, ShoppingBag } from "lucide-react";
 import { Input } from "@/components/ui/input";
-
-interface Order {
-  id: string;
-  date: string;
-  status: string;
-  total: number;
-  items: number;
-  products: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
-}
-
-const mockOrders: Order[] = [
-  {
-    id: "ORD-001",
-    date: "2025-01-31",
-    status: "Delivered",
-    total: 129.99,
-    items: 2,
-    products: [
-      {
-        name: "Gaming Mouse",
-        quantity: 1,
-        price: 79.99,
-      },
-      {
-        name: "Mousepad",
-        quantity: 1,
-        price: 50.0,
-      },
-    ],
-  },
-  {
-    id: "ORD-002",
-    date: "2025-01-25",
-    status: "Processing",
-    total: 79.99,
-    items: 1,
-    products: [
-      {
-        name: "Gaming Keyboard",
-        quantity: 1,
-        price: 79.99,
-      },
-    ],
-  },
-  {
-    id: "ORD-003",
-    date: "2025-01-20",
-    status: "Delivered",
-    total: 299.99,
-    items: 3,
-    products: [
-      {
-        name: "Gaming Headset",
-        quantity: 1,
-        price: 199.99,
-      },
-      {
-        name: "USB Hub",
-        quantity: 2,
-        price: 50.0,
-      },
-    ],
-  },
-];
+import { Skeleton } from "@/components/ui/skeleton";
+import { useUserPurchases, GroupedOrder } from "@/hooks/useUserPurchases";
+import { format } from "date-fns";
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -106,7 +41,74 @@ const staggerContainer = {
 };
 
 export default function OrdersPage() {
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<GroupedOrder | null>(null);
+  const {
+    isLoading,
+    error,
+    filteredOrders,
+    totalOrders,
+    activeOrders,
+    completedOrders,
+    searchTerm,
+    setSearchTerm,
+  } = useUserPurchases();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        {/* Header Skeleton */}
+        <div className="flex justify-between items-start">
+          <div>
+            <Skeleton className="h-9 w-48 mb-2" />
+            <Skeleton className="h-5 w-64" />
+          </div>
+        </div>
+
+        {/* Stats Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Search Skeleton */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Skeleton className="h-10 flex-1" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+
+        {/* Table Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-7 w-32" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-lg mb-2 text-destructive">
+          Error loading orders: {error}
+        </p>
+        <Button onClick={() => window.location.reload()}>Try Again</Button>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       className="space-y-8"
@@ -145,7 +147,7 @@ export default function OrdersPage() {
               </div>
               <div>
                 <p className="text-sm font-medium">Total Orders</p>
-                <h3 className="text-2xl font-bold">{mockOrders.length}</h3>
+                <h3 className="text-2xl font-bold">{totalOrders}</h3>
               </div>
             </CardContent>
           </Card>
@@ -163,12 +165,7 @@ export default function OrdersPage() {
               </div>
               <div>
                 <p className="text-sm font-medium">Active Orders</p>
-                <h3 className="text-2xl font-bold">
-                  {
-                    mockOrders.filter((order) => order.status === "Processing")
-                      .length
-                  }
-                </h3>
+                <h3 className="text-2xl font-bold">{activeOrders}</h3>
               </div>
             </CardContent>
           </Card>
@@ -186,12 +183,7 @@ export default function OrdersPage() {
               </div>
               <div>
                 <p className="text-sm font-medium">Completed Orders</p>
-                <h3 className="text-2xl font-bold">
-                  {
-                    mockOrders.filter((order) => order.status === "Delivered")
-                      .length
-                  }
-                </h3>
+                <h3 className="text-2xl font-bold">{completedOrders}</h3>
               </div>
             </CardContent>
           </Card>
@@ -202,7 +194,12 @@ export default function OrdersPage() {
       <motion.div className="flex flex-col sm:flex-row gap-4" variants={fadeIn}>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search orders..." className="pl-9" />
+          <Input
+            placeholder="Search orders or products..."
+            className="pl-9"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
         <Button variant="outline" className="flex gap-2">
           <Filter className="h-4 w-4" />
@@ -217,51 +214,74 @@ export default function OrdersPage() {
             <CardTitle>Order History</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Items</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.id}</TableCell>
-                    <TableCell>{order.date}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          order.status === "Delivered" ? "default" : "secondary"
-                        }
-                      >
-                        {order.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{order.items}</TableCell>
-                    <TableCell className="text-right">
-                      ${order.total.toFixed(2)}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedOrder(order)}
-                      >
-                        View Details
-                      </Button>
-                    </TableCell>
+            {filteredOrders.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <ShoppingBag className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg mb-2">
+                  {searchTerm
+                    ? "No orders found matching your search"
+                    : "No orders found"}
+                </p>
+                <p className="text-sm">
+                  {searchTerm
+                    ? "Try adjusting your search terms"
+                    : "Start shopping to see your orders here!"}
+                </p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Order ID</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Items</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredOrders.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-medium">
+                        {order.id.slice(0, 8)}...
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(order.date), "MMM dd, yyyy")}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            order.status === "Delivered"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
+                          {order.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{order.items}</TableCell>
+                      <TableCell className="text-right">
+                        ${order.total.toFixed(2)}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedOrder(order)}
+                        >
+                          View Details
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </motion.div>
+
       {/* Order Details Dialog */}
       <Dialog
         open={!!selectedOrder}
@@ -281,7 +301,12 @@ export default function OrdersPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Date</p>
-                  <p className="font-medium">{selectedOrder.date}</p>
+                  <p className="font-medium">
+                    {format(
+                      new Date(selectedOrder.date),
+                      "MMM dd, yyyy 'at' HH:mm"
+                    )}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
@@ -300,31 +325,23 @@ export default function OrdersPage() {
               <div>
                 <h4 className="text-sm font-medium mb-3">Products</h4>
                 <div className="space-y-3">
-                  {selectedOrder.products.map(
-                    (
-                      product: {
-                        name: string;
-                        quantity: number;
-                        price: number;
-                      },
-                      index: number
-                    ) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-center py-2 border-b last:border-0"
-                      >
-                        <div>
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Quantity: {product.quantity}
-                          </p>
-                        </div>
-                        <p className="font-medium">
-                          ${(product.price * product.quantity).toFixed(2)}
+                  {selectedOrder.products.map((product) => (
+                    <div
+                      key={product.id}
+                      className="flex justify-between items-center py-2 border-b last:border-0"
+                    >
+                      <div>
+                        <p className="font-medium">{product.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Quantity: {product.quantity} • $
+                          {product.unit_price.toFixed(2)} each
                         </p>
                       </div>
-                    )
-                  )}
+                      <p className="font-medium">
+                        ${product.total_price.toFixed(2)}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -334,6 +351,12 @@ export default function OrdersPage() {
                   ${selectedOrder.total.toFixed(2)}
                 </p>
               </div>
+
+              {selectedOrder.stripe_payment_intent_id && (
+                <div className="text-xs text-muted-foreground">
+                  Payment ID: {selectedOrder.stripe_payment_intent_id}
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

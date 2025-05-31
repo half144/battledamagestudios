@@ -40,10 +40,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       // Fazer uma única requisição para o endpoint de verificação
-      const response = await fetch("/api/auth/check");
+      const response = await fetch("/api/auth/check", {
+        cache: "no-store", // Sempre buscar dados frescos
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      });
       const data = await response.json();
 
+      console.log("[Auth Provider] Data received from API:", data); // Debug log
+
       if (data.authenticated && data.user) {
+        console.log("[Auth Provider] User data:", data.user); // Debug log
         // Usuário autenticado, atualizar o perfil na store
         setProfile({
           id: data.user.id,
@@ -51,6 +59,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           username:
             data.user.username || data.user.email?.split("@")[0] || "Usuário",
           role: data.user.role || "user",
+          avatar_url: data.user.avatar_url,
+          full_name: data.user.full_name,
+          created_at: data.user.created_at,
+          updated_at: data.user.updated_at,
+          total_spent: data.user.total_spent || 0,
+          total_orders: data.user.total_orders || 0,
+          member_since: data.user.member_since || data.user.created_at,
         });
       } else {
         // Usuário não está autenticado, limpar o perfil

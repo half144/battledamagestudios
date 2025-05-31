@@ -6,6 +6,13 @@ export interface ProfileData {
   username: string;
   email?: string;
   role?: "admin" | "user";
+  avatar_url?: string | null;
+  full_name?: string | null;
+  created_at?: string; // Ou Date, dependendo de como você for tratar
+  updated_at?: string; // Ou Date
+  total_spent?: number;
+  total_orders?: number;
+  member_since?: string; // Ou Date
 }
 
 interface ProfileStore {
@@ -15,6 +22,7 @@ interface ProfileStore {
   setProfile: (profile: ProfileData | null) => void;
   setLoading: (isLoading: boolean) => void;
   clearProfile: () => void;
+  refreshProfile: () => void;
 }
 
 export const useProfileStore = create<ProfileStore>()(
@@ -42,6 +50,20 @@ export const useProfileStore = create<ProfileStore>()(
           isAuthenticated: false,
           isLoading: false,
         });
+      },
+
+      refreshProfile: () => {
+        // Limpar o cache do sessionStorage e forçar reload
+        sessionStorage.removeItem("profile-storage");
+        set({
+          profile: null,
+          isAuthenticated: false,
+          isLoading: true,
+        });
+        // Trigger a re-fetch by reloading the page or calling checkAuth
+        if (typeof window !== "undefined") {
+          window.location.reload();
+        }
       },
     }),
     {

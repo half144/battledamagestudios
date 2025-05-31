@@ -98,7 +98,7 @@ export function Header() {
                   <div className="flex items-center space-x-2 cursor-pointer">
                     <Avatar className="h-8 w-8 border border-red-500/50">
                       <AvatarImage
-                        src="/placeholder-avatar.png"
+                        src={profile?.avatar_url || undefined}
                         alt="Profile"
                       />
                       <AvatarFallback className="bg-red-500/10 text-red-500">
@@ -106,7 +106,7 @@ export function Header() {
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium">
-                      {profile?.username || "User"}
+                      {profile?.full_name || profile?.username || "User"}
                     </span>
                   </div>
                 </DropdownMenuTrigger>
@@ -224,7 +224,7 @@ export function Header() {
                   <div className="flex items-center space-x-2 p-2 border border-red-500/20 rounded-md">
                     <Avatar className="h-8 w-8 border border-red-500/50">
                       <AvatarImage
-                        src="/placeholder-avatar.png"
+                        src={profile?.avatar_url || undefined}
                         alt="Profile"
                       />
                       <AvatarFallback className="bg-red-500/10 text-red-500">
@@ -232,7 +232,7 @@ export function Header() {
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium">
-                      {profile?.username || "User"}
+                      {profile?.full_name || profile?.username || "User"}
                     </span>
                   </div>
                   <Button

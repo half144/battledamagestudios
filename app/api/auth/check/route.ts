@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
         const profiles = await profileResponse.json();
         if (profiles && profiles.length > 0) {
           profileData = profiles[0];
+          console.log("[Auth Check] Profile data from DB:", profileData); // Debug log
         }
       }
 
@@ -81,15 +82,22 @@ export async function GET(request: NextRequest) {
         };
       }
 
+      const finalUserData = {
+        id: userData.id,
+        email: userData.email,
+        ...profileData,
+      };
+
+      console.log(
+        "[Auth Check] Final user data being returned:",
+        finalUserData
+      ); // Debug log
+
       // Responder com os dados do usuário autenticado
       return NextResponse.json(
         {
           authenticated: true,
-          user: {
-            id: userData.id,
-            email: userData.email,
-            ...profileData,
-          },
+          user: finalUserData,
         },
         { status: 200 }
       );
