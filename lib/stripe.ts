@@ -11,11 +11,7 @@ export const getStripeProducts = cache(async (): Promise<StripeProduct[]> => {
     const response = await fetch(
       `${
         process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-      }/api/stripe/products`,
-      {
-        cache: "force-cache",
-        next: { revalidate: 300 },
-      }
+      }/api/stripe/products`
     );
 
     if (!response.ok) {
