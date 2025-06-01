@@ -103,43 +103,6 @@ export const ProductDetailsClient = ({
           </div>
         </div>
 
-        {product.metadata && Object.keys(product.metadata).length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold">Product Details</h3>
-            <div className="grid grid-cols-1 gap-2">
-              {Object.entries(product.metadata).map(([key, value]) => (
-                <div
-                  key={key}
-                  className="flex justify-between py-2 border-b border-muted"
-                >
-                  <span className="text-muted-foreground capitalize">
-                    {key.replace(/_/g, " ")}:
-                  </span>
-                  <span className="font-medium">{value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {product.metadata?.download_url && (
-          <div className="p-4 bg-muted rounded-lg">
-            <p className="text-sm text-muted-foreground mb-2">
-              Download available after purchase:
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                window.open(product.metadata.download_url, "_blank")
-              }
-            >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Preview Download
-            </Button>
-          </div>
-        )}
-
         <div className="pt-6 border-t border-red-500/20">
           <div className="flex items-center justify-between mb-4">
             <span className="text-3xl font-bold">
