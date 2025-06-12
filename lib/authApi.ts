@@ -234,6 +234,94 @@ export const signUpWithEmailApi = async (
 };
 
 /**
+ * Sends a password reset email via a server-side API endpoint.
+ * @param email The user's email.
+ * @returns The result of the operation.
+ */
+export const forgotPasswordApi = async (
+  email: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    // This will call our new backend API route
+    const response = await fetch("/api/auth/forgot-password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      // The server will return a generic message, but we can have a client-side generic message too.
+      return {
+        success: false,
+        error: errorData.error || "Something went wrong.",
+      };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error in forgot password process:", error);
+    return {
+      success: false,
+      error: "An unexpected error occurred.",
+    };
+  }
+};
+
+/**
+ * Resets the user's password using the Supabase Auth API.
+ * This is used on the /reset-password page after the user clicks the email link.
+ * @param accessToken The password recovery access token from the URL hash.
+ * @param password The new password.
+ * @returns The result of the operation.
+ */
+export const resetPasswordApi = async (
+  accessToken: string,
+  password: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_API_KEY || "",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ password }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return {
+        success: false,
+        error: errorData.error_description || "Failed to reset password.",
+      };
+    }
+
+    // After a successful password reset, the user is effectively logged in
+    // with the recovery token. We should clear this session.
+    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_API_KEY || "",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error in reset password process:", error);
+    return {
+      success: false,
+      error: "An unexpected error occurred.",
+    };
+  }
+};
+
+/**
  * Sincroniza a sessão com o servidor
  * @returns Sucesso ou falha da operação
  */
