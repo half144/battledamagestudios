@@ -9,7 +9,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    const redirectTo = new URL("/reset-password", request.url).toString();
+    // Hardcode the redirect URL to always point to the production site.
+    const redirectTo = "https://battledamagestudios.vercel.app/reset-password";
 
     const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
       redirectTo,
