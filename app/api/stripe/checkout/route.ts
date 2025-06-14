@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
+      locale: 'en',
       success_url: `${
         process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
       }/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
